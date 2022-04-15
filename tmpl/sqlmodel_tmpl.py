@@ -14,6 +14,6 @@ from sqlalchemy import Column, VARCHAR
 from sqlmodel import Field, SQLModel
 
 class {{ name | lower }}(SQLModel, table=True):
-{% for field in fields %}
-    {{ field.name }}:Optional[{{ field.type }}] = Field(sa_column=Column("{{ field.name }}", default=None, primary_key=True)
+{% for column in columns %}
+    {{ column.name }}:Optional[{{ column.type }}] = Field(sa_column=Column("{{ column.name }}", default=None, primary_key=True))
 {% endfor %}

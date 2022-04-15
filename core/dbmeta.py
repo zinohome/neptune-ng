@@ -469,7 +469,7 @@ class DBMeta(object):
             template = env.get_template('sqlmodel_tmpl.py')
             gencode = template.render(dtable.table2json())
             log.logger.debug(gencode)
-            modelsfilepath = os.path.abspath(os.path.join(modelspath, tbl+".py"))
+            modelsfilepath = os.path.abspath(os.path.join(modelspath, tbl.lower()+".py"))
             with open(modelsfilepath, 'w', encoding='utf-8') as gencodefile:
                 gencodefile.write(gencode)
                 gencodefile.close()
