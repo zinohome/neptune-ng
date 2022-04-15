@@ -451,6 +451,21 @@ class DBMeta(object):
         except Exception as exp:
             log.logger.error('Exception at gen_ddl() %s ' % exp)
 
+    def gen_models(self):
+        basepath = os.path.abspath(os.path.dirname(os.path.abspath(__file__)))
+        apppath = os.path.abspath(os.path.join(basepath, os.pardir))
+        tmplpath = os.path.abspath(os.path.join(apppath, 'tmpl'))
+        modelspath = os.path.abspath(os.path.join(apppath, 'models'))
+        tbls = self.
+        pass
+
+    def gen_services(self):
+        basepath = os.path.abspath(os.path.dirname(os.path.abspath(__file__)))
+        apppath = os.path.abspath(os.path.join(basepath, os.pardir))
+        tmplpath = os.path.abspath(os.path.join(apppath, 'tmpl'))
+        servicespath = os.path.abspath(os.path.join(apppath, 'services'))
+        pass
+
     def response_dbdiagram(self, filename, canvasonly=False):
         basepath = os.path.abspath(os.path.dirname(os.path.abspath(__file__)))
         apppath = os.path.abspath(os.path.join(basepath, os.pardir))
