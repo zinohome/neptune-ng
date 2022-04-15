@@ -12,6 +12,7 @@ import os
 from core import dbengine, tableschema
 from sqlalchemy import inspect, Table
 from sqlalchemy.schema import MetaData,CreateTable
+from jinja2 import Environment, FileSystemLoader
 import simplejson as json
 from config import config
 from util import log, toolkit
@@ -456,7 +457,26 @@ class DBMeta(object):
         apppath = os.path.abspath(os.path.join(basepath, os.pardir))
         tmplpath = os.path.abspath(os.path.join(apppath, 'tmpl'))
         modelspath = os.path.abspath(os.path.join(apppath, 'models'))
-        tbls = self.
+        tbls = self.get_tables()
+        for tbl in tbls:
+            dtable = self.gettable(tbl)
+            log.logger.debug(dtable.table2json())
+            #log.logger.debug(dtable.columns)
+            #for column in dtable.columns:
+                #log.logger.debug(column)
+                #log.logger.debug(column['type'])
+            env = Environment(loader=FileSystemLoader(tmplpath), trim_blocks=True, lstrip_blocks=True)
+            template = env.get_template('sqlmodel_tmpl.py')
+            gencode = template.render(dtable.table2json())
+            log.logger.debug(gencode)
+            modelsfilepath = os.path.abspath(os.path.join(modelspath, tbl+".py"))
+            with open(modelsfilepath, 'w', encoding='utf-8') as gencodefile:
+                gencodefile.write(gencode)
+                gencodefile.close()
+
+        views = self.get_views()
+        for view in views:
+            pass
         pass
 
     def gen_services(self):
@@ -503,6 +523,7 @@ if __name__ == '__main__':
     #meta.gen_dbdirgram()
     meta.gen_dbdirgramcanvas()
     meta.gen_ddl()
+    meta.gen_models()
 
     '''
     log.logger.debug(otable.table2json())
