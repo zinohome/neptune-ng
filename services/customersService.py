@@ -10,7 +10,7 @@
 #  @Software: Neptune-NG
 import collections
 import simplejson as json
-from sqlalchemy import func, or_
+from sqlalchemy import func, or_, literal_column, column
 
 from sqlmodel import Session, select, col
 
@@ -133,10 +133,27 @@ class customersService(object):
             session.close()
 
     def query_customers(self):
+        queryjsonstr = '{' \
+                       '"queryfields":"customers.*",' \
+                       '"order_by":"customers.phone_number.asc(), customers.household_income.asc()",' \
+                       '"limit":2,' \
+                       '"offset":2' \
+                       '}'
+        queryjson = json.loads(queryjsonstr)
+        log.logger.debug('The query JSON is: %s' % queryjson)
+        queryfields = queryjson['queryfields'].replace(' ','')
+        if "*" in queryfields:
+            queryfields="customers."+",customers.".join(tuple(customers.__fields__.keys()))
+        querycolumns = eval(queryfields)
+        orderfields = queryjson['order_by']
+        orderfieldslist = tuple(filter(None,orderfields.replace(' ','').split(',')))
+        print(orderfieldslist)
+        ordercolumns = eval(orderfields)
+
         try:
             engine = dbengine.DBEngine().connect()
             with Session(engine) as session:
-                statement = select(customers).where(customers.first_name != 'Jun', customers.household_income > 80001).where(or_(customers.last_name != 'Zhang')).order_by(customers.phone_number.asc()).limit(2).offset(1)
+                statement = select(from_obj=customers, columns=querycolumns).where(customers.first_name != 'Jun', customers.household_income > 80001).where(or_(customers.last_name != 'Zhang')).order_by(ordercolumns).limit(queryjson['limit']).offset(queryjson['offset'])
                 result = session.exec(statement).all()
                 #log.logger.debug('query_customers() result is : %s' % result)
                 return result
