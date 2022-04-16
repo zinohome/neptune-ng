@@ -80,6 +80,10 @@ def to_json(jsonstr):
     else:
         return None
 
+def jsonstrsort(jsonstr):
+    jsonobj = json.loads(jsonstr)
+    return json.dumps(jsonobj,sort_keys=True)
+
 
 def is_list(lststr):
     try:

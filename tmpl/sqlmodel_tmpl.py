@@ -23,3 +23,6 @@ class {{ name | lower }}(SQLModel, table=True):
     {{column.name}}: {{column.pythonType}} = Field(sa_column=Column("{{ column.name }}", default={{column.default}}, primary_key={{column.primary_key | int > 0}}))
     {% endif %}
 {% endfor %}
+
+    def sortjson(self):
+        return self.json(sort_keys=True)

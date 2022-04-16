@@ -41,15 +41,14 @@ class customersService(object):
 
 
     def dump_model(self, model):
-        data = json.loads(model.json(), object_pairs_hook=collections.OrderedDict)
-        return json.dumps(data)
+        return model.sortjson()
 
 
     def dump_model_list(self, modellist):
         jsonlist = json.loads('{"data":""}')
         jlst = list()
         for model in modellist:
-            jlst.append(self.dump_model(model))
+            jlst.append(model.sortjson())
         jsonlist['data'] = jlst
         return jsonlist
 
@@ -130,12 +129,12 @@ if __name__ == '__main__':
     log.logger.info('getall_customers() is : %s' % cs.getall_customers())
     log.logger.info('getall_customers() JSON is : %s' % cs.dump_model_list(cs.getall_customers()))
     customer_json_str = '{"first_name":"Jun","last_name":"Zhang","gender":"Male","household_income":120000,"birthdate":"1979-09-23","phone_number":17895329550,"email":"zhangjun@gmail.com"}'
-    customer_json = json.loads(customer_json_str)
+    customer_json = json.loads(toolkit.jsonstrsort(customer_json_str))
     log.logger.debug('Customer data is : %s' % customer_json)
     custome_zhangjun = cs.new_model(customer_json)
     log.logger.debug('Customer is : %s' % custome_zhangjun)
     log.logger.debug('Customer JSON is : %s' % cs.dump_model(custome_zhangjun))
-    #log.logger.debug('Customer JSON is : %s' % custome_zhangjun.json())
+    log.logger.debug('Customer JSON is : %s' % custome_zhangjun.sortjson())
 
 
     '''
