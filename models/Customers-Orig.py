@@ -23,4 +23,4 @@ class customers(SQLModel, table=True):
     birthdate: date = Field(sa_column=Column("birthdate", default=None, primary_key=False))
     phone_number: int = Field(sa_column=Column("phone_number", default=None, primary_key=False))
     email: Optional[str] = Field(sa_column=Column("email", default=None, primary_key=False))
-    customer_id: Optional[int] = Field(sa_column=Column("customer_id", default=None, primary_key=True))
+    customer_id: Optional[int] = Field(default=None, primary_key=True)
