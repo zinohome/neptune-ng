@@ -10,6 +10,7 @@
 #  @Software: Neptune-NG
 import collections
 import simplejson as json
+from sqlalchemy import func, or_
 
 from sqlmodel import Session, select, col
 
@@ -57,6 +58,18 @@ class customersService(object):
                 return results.all()
         except Exception as e:
             log.logger.error('Exception at getall_Customers(): %s ' % e)
+            return None
+        finally:
+            session.close()
+
+    def get_customers_count(self):
+        try:
+            engine = dbengine.DBEngine().connect()
+            with Session(engine) as session:
+                results = session.execute('select count(*) from customers')
+                return results.one()[0]
+        except Exception as e:
+            log.logger.error('Exception at get_customers_count(): %s ' % e)
             return None
         finally:
             session.close()
@@ -120,13 +133,27 @@ class customersService(object):
             session.close()
 
     def query_customers(self):
-        pass
+        try:
+            engine = dbengine.DBEngine().connect()
+            with Session(engine) as session:
+                statement = select(customers).where(customers.first_name != 'Jun', customers.household_income > 80001).where(or_(customers.last_name != 'Zhang')).order_by(customers.phone_number.asc()).limit(2).offset(1)
+                result = session.exec(statement).all()
+                #log.logger.debug('query_customers() result is : %s' % result)
+                return result
+        except Exception as e:
+            log.logger.error('Exception at query_customers(): %s ' % e)
+            return None
+        finally:
+            session.close()
 
 if __name__ == '__main__':
     cs = customersService()
     log.logger.error('====================== getall_customers() ======================')
     log.logger.info('getall_customers() is : %s' % cs.getall_customers())
     log.logger.info('getall_customers() JSON is : %s' % cs.dump_model_list(cs.getall_customers()))
+    log.logger.error('====================== get_customers_count() ======================')
+    count = cs.get_customers_count()
+    log.logger.info('get_customers_count() is : %s' % count)
     log.logger.error('====================== a new customer ======================')
     customer_json_str = '{"first_name":"Jun","last_name":"Zhang","gender":"Male","household_income":120000,"birthdate":"1979-09-23","phone_number":17895329550,"email":"zhangjun@gmail.com"}'
     customer_json = json.loads(toolkit.jsonstrsort(customer_json_str))
@@ -150,3 +177,7 @@ if __name__ == '__main__':
     log.logger.info("The before mod customer is :%s" % customer_mod)
     customer_moded = cs.update_customers_byid(customer_mod)
     log.logger.info("The moded customer is :%s" % customer_moded)
+    log.logger.error('====================== query_customers() ======================')
+    customer_result = cs.query_customers()
+    log.logger.info("The customer query result is :%s" % customer_result)
+    #log.logger.info('The customer query result JSON is : %s' % cs.dump_model_list(customer_result))
