@@ -8,7 +8,7 @@
 #  @Time    : 2021
 #  @Author  : Zhang Jun
 #  @Email   : ibmzhangjun@139.com
-#  @Software: Neptune
+#  @Software: Neptune-NG
 
 import os
 import json

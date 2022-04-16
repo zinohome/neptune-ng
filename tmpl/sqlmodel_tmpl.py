@@ -7,7 +7,7 @@
 #  @Time    : 2021
 #  @Author  : Zhang Jun
 #  @Email   : ibmzhangjun@139.com
-#  @Software: Neptune
+#  @Software: Neptune-NG
 
 from typing import Optional
 from sqlalchemy import Column, VARCHAR

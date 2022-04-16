@@ -7,7 +7,7 @@
 #  @Time    : 2021
 #  @Author  : Zhang Jun
 #  @Email   : ibmzhangjun@139.com
-#  @Software: Neptune
+#  @Software: Neptune-NG
 
 import base64
 from Crypto.Cipher import AES

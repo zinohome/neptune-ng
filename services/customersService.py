@@ -7,8 +7,10 @@
 #  @Time    : 2021
 #  @Author  : Zhang Jun
 #  @Email   : ibmzhangjun@139.com
-#  @Software: Neptune
-'''config'''
+#  @Software: Neptune-NG
+import collections
+import simplejson as json
+
 from sqlmodel import Session, select, col
 
 from core import dbengine
@@ -25,21 +27,45 @@ cfg = config.app_config
 '''logging'''
 log = log.Logger(level=cfg['Application_Config'].app_log_level)
 
-class CustomersService(object):
+class customersService(object):
     def __init__(self):
-        self._modelName = 'Customers'
+        self._modelName = 'customers'
 
-    def getall_Customers(self):
+
+    def new_model(self, modeljson):
+        newmodel = customers()
+        for field in newmodel.__fields__.values():
+            if field.name in modeljson:
+                newmodel.__setattr__(field.name, modeljson[field.name])
+        return newmodel
+
+
+    def dump_model(self, model):
+        data = json.loads(model.json(), object_pairs_hook=collections.OrderedDict)
+        return json.dumps(data)
+
+
+    def dump_model_list(self, modellist):
+        jsonlist = json.loads('{"data":""}')
+        jlst = list()
+        for model in modellist:
+            jlst.append(self.dump_model(model))
+        jsonlist['data'] = jlst
+        return jsonlist
+
+
+    def getall_customers(self):
         try:
             engine = dbengine.DBEngine().connect()
             with Session(engine) as session:
-                results = session.query(customers)
+                results = session.query(customers).limit(cfg['Query_Config'].query_limit_upset)
                 return results.all()
         except Exception as e:
             log.logger.error('Exception at getall_Customers(): %s ' % e)
             return None
 
-    def create_Customers(self, customer):
+
+    def create_customers(self, customer):
         try:
             engine = dbengine.DBEngine().connect()
             with Session(engine) as session:
@@ -51,7 +77,7 @@ class CustomersService(object):
             log.logger.error('Exception at get_Customers(): %s ' % e)
             return None
 
-    def get_Customers(self, id):
+    def get_customers(self, id):
         try:
             engine = dbengine.DBEngine().connect()
             with Session(engine) as session:
@@ -63,7 +89,7 @@ class CustomersService(object):
             log.logger.error('Exception at get_Customers(): %s ' % e)
             return None
 
-    def update_Customers(self, customer):
+    def update_customers(self, customer):
         try:
             engine = dbengine.DBEngine().connect()
             with Session(engine) as session:
@@ -93,20 +119,32 @@ class CustomersService(object):
             log.logger.error('Exception at get_Customers(): %s ' % e)
             return None
 
-    def delete_Customers(self, id):
+    def delete_customers(self, id):
         pass
 
-    def query_Customers(self):
+    def query_customers(self):
         pass
 
 if __name__ == '__main__':
-    cs = CustomersService()
-    log.logger.info('getall_Customers() is : %s' % cs.getall_Customers())
-    cus1 = cs.get_Customers(1)
+    cs = customersService()
+    log.logger.info('getall_customers() is : %s' % cs.getall_customers())
+    log.logger.info('getall_customers() JSON is : %s' % cs.dump_model_list(cs.getall_customers()))
+    customer_json_str = '{"first_name":"Jun","last_name":"Zhang","gender":"Male","household_income":120000,"birthdate":"1979-09-23","phone_number":17895329550,"email":"zhangjun@gmail.com"}'
+    customer_json = json.loads(customer_json_str)
+    log.logger.debug('Customer data is : %s' % customer_json)
+    custome_zhangjun = cs.new_model(customer_json)
+    log.logger.debug('Customer is : %s' % custome_zhangjun)
+    log.logger.debug('Customer JSON is : %s' % cs.dump_model(custome_zhangjun))
+    #log.logger.debug('Customer JSON is : %s' % custome_zhangjun.json())
+
+
+    '''
+    cus1 = cs.get_customers(1)
     log.logger.info('cus1 is : %s' % cus1)
     log.logger.info('cus1 type is : %s' % type(cus1))
     cus2 = customers(last_name='Jacobs', household_income=120000, phone_number=9177554315, customer_id=1, birthdate='1990-12-13', first_name='Jeremy', gender='Male', email='Jeremy@Gmail.com')
     log.logger.info('cus2 is : %s' % cus2)
-    cs.update_Customers(cus2)
-    cus3 = cs.get_Customers(1)
+    cs.update_customers(cus2)
+    cus3 = cs.get_customers(1)
     log.logger.info('cus3 is : %s' % cus3)
+    '''
