@@ -338,7 +338,7 @@ class DBMeta(object):
                     ndgcolume = {}
                     ndgcolume['id'] = str(uuid.uuid1())
                     ndgcolume['name'] = clm['name']
-                    ndgcolume['comment'] = '' if clm['comment'] == 'None' else clm['comment']
+                    #ndgcolume['comment'] = '' if clm['comment'] == 'None' else clm['comment']
                     ndgcolume['dataType'] = clm['type']
                     ndgcolume['default'] =  '' if clm['default'] == 'None' else clm['default']
                     ndgcolume['option'] = {"autoIncrement": False,"primaryKey": False,"unique": False,"notNull": False}
@@ -469,7 +469,7 @@ class DBMeta(object):
                 env = Environment(loader=FileSystemLoader(tmplpath), trim_blocks=True, lstrip_blocks=True)
                 template = env.get_template('sqlmodel_tmpl.py')
                 gencode = template.render(dtable.table2json())
-                log.logger.debug(gencode)
+                #log.logger.debug(gencode)
                 modelsfilepath = os.path.abspath(os.path.join(modelspath, tbl.lower()+".py"))
                 with open(modelsfilepath, 'w', encoding='utf-8') as gencodefile:
                     gencodefile.write(gencode)
@@ -483,7 +483,7 @@ class DBMeta(object):
                 env = Environment(loader=FileSystemLoader(tmplpath), trim_blocks=True, lstrip_blocks=True)
                 template = env.get_template('sqlmodel_tmpl.py')
                 gencode = template.render(dview.table2json())
-                log.logger.debug(gencode)
+                #log.logger.debug(gencode)
                 modelsfilepath = os.path.abspath(os.path.join(modelspath, view.lower() + ".py"))
                 with open(modelsfilepath, 'w', encoding='utf-8') as gencodefile:
                     gencodefile.write(gencode)

@@ -74,9 +74,10 @@ class CustomersService(object):
                 fields = result.__fields__.values()
                 for field in fields:
                     #log.logger.debug(field)
-                    log.logger.debug(type(field))
-                    log.logger.debug(dir(field))
-                    log.logger.debug(field.name)
+                    #log.logger.debug(type(field))
+                    #log.logger.debug(dir(field))
+                    #log.logger.debug(field.name)
+                    pass
                 result.first_name = customer.first_name
                 result.last_name = customer.last_name
                 result.gender = customer.gender
