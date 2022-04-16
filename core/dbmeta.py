@@ -170,6 +170,7 @@ class DBMeta(object):
                             persist_table = True
                     if persist_table:
                         user_table = Table(table_name, metadata, autoload_with=engine)
+                        cptypedict = dict([(c.name, c.type.python_type.__name__) for c in user_table.columns])
                         jtbl = {}
                         jtbls[table_name] = jtbl
                         jtbl['Name'] = table_name
@@ -192,6 +193,7 @@ class DBMeta(object):
                             cdict={}
                             for key, value in column.items():
                                 cdict[key] = value.__str__()
+                            cdict['pythonType'] = cptypedict[cdict['name']]
                             jtbl['Columns'].append(cdict)
                         jtbl['Dict'] = json.loads(json.dumps(user_table.__dict__,
                                                              indent=4, sort_keys=True, default=str))
@@ -207,6 +209,7 @@ class DBMeta(object):
                             persist_view = True
                     if persist_view:
                         user_view = Table(view_name, metadata, autoload_with=engine)
+                        cptypedict = dict([(c.name, c.type.python_type.__name__) for c in user_view.columns])
                         vtbl = {}
                         jtbls[view_name] = vtbl
                         vtbl['Name'] = view_name
@@ -229,6 +232,7 @@ class DBMeta(object):
                             vdict = {}
                             for key, value in vcolumn.items():
                                 vdict[key] = value.__str__()
+                            cdict['pythonType'] = cptypedict[vdict['name']]
                             vtbl['Columns'].append(vdict)
                         vtbl['Dict'] = json.loads(
                             json.dumps(user_view.__dict__, indent=4, sort_keys=True, default=str))
@@ -452,32 +456,41 @@ class DBMeta(object):
         except Exception as exp:
             log.logger.error('Exception at gen_ddl() %s ' % exp)
 
+
     def gen_models(self):
         basepath = os.path.abspath(os.path.dirname(os.path.abspath(__file__)))
         apppath = os.path.abspath(os.path.join(basepath, os.pardir))
         tmplpath = os.path.abspath(os.path.join(apppath, 'tmpl'))
         modelspath = os.path.abspath(os.path.join(apppath, 'models'))
-        tbls = self.get_tables()
-        for tbl in tbls:
-            dtable = self.gettable(tbl)
-            log.logger.debug(dtable.table2json())
-            #log.logger.debug(dtable.columns)
-            #for column in dtable.columns:
-                #log.logger.debug(column)
-                #log.logger.debug(column['type'])
-            env = Environment(loader=FileSystemLoader(tmplpath), trim_blocks=True, lstrip_blocks=True)
-            template = env.get_template('sqlmodel_tmpl.py')
-            gencode = template.render(dtable.table2json())
-            log.logger.debug(gencode)
-            modelsfilepath = os.path.abspath(os.path.join(modelspath, tbl.lower()+".py"))
-            with open(modelsfilepath, 'w', encoding='utf-8') as gencodefile:
-                gencodefile.write(gencode)
-                gencodefile.close()
+        try:
+            tbls = self.get_tables()
+            for tbl in tbls:
+                dtable = self.gettable(tbl)
+                env = Environment(loader=FileSystemLoader(tmplpath), trim_blocks=True, lstrip_blocks=True)
+                template = env.get_template('sqlmodel_tmpl.py')
+                gencode = template.render(dtable.table2json())
+                log.logger.debug(gencode)
+                modelsfilepath = os.path.abspath(os.path.join(modelspath, tbl.lower()+".py"))
+                with open(modelsfilepath, 'w', encoding='utf-8') as gencodefile:
+                    gencodefile.write(gencode)
+                    gencodefile.close()
+        except Exception as exp:
+            log.logger.error('Exception at gen_models() %s ' % exp)
+        try:
+            views = self.get_views()
+            for view in views:
+                dview = self.gettable(view)
+                env = Environment(loader=FileSystemLoader(tmplpath), trim_blocks=True, lstrip_blocks=True)
+                template = env.get_template('sqlmodel_tmpl.py')
+                gencode = template.render(dview.table2json())
+                log.logger.debug(gencode)
+                modelsfilepath = os.path.abspath(os.path.join(modelspath, view.lower() + ".py"))
+                with open(modelsfilepath, 'w', encoding='utf-8') as gencodefile:
+                    gencodefile.write(gencode)
+                    gencodefile.close()
+        except Exception as exp:
+            log.logger.error('Exception at gen_models() %s ' % exp)
 
-        views = self.get_views()
-        for view in views:
-            pass
-        pass
 
     def gen_services(self):
         basepath = os.path.abspath(os.path.dirname(os.path.abspath(__file__)))
@@ -520,7 +533,7 @@ if __name__ == '__main__':
     otable = meta.gettable('customers')
     log.logger.debug(meta.get_tables())
     log.logger.debug(meta.get_views())
-    #meta.gen_dbdirgram()
+    meta.gen_dbdirgram()
     meta.gen_dbdirgramcanvas()
     meta.gen_ddl()
     meta.gen_models()

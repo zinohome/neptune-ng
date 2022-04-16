@@ -13,7 +13,7 @@ from sqlmodel import Session, select, col
 
 from core import dbengine
 from config import config
-from models.Customers import Customers
+from models.customers import customers
 from util import log, toolkit
 
 from sqlmodel.sql.expression import Select, SelectOfScalar
@@ -33,7 +33,7 @@ class CustomersService(object):
         try:
             engine = dbengine.DBEngine().connect()
             with Session(engine) as session:
-                results = session.query(Customers)
+                results = session.query(customers)
                 return results.all()
         except Exception as e:
             log.logger.error('Exception at getall_Customers(): %s ' % e)
@@ -55,7 +55,7 @@ class CustomersService(object):
         try:
             engine = dbengine.DBEngine().connect()
             with Session(engine) as session:
-                statement = select(Customers).where(col(Customers.customer_id) == id)
+                statement = select(customers).where(col(customers.customer_id) == id)
                 result = session.exec(statement).one()
                 log.logger.debug('get_Customers() result is : %s' % result)
                 return result
@@ -67,7 +67,7 @@ class CustomersService(object):
         try:
             engine = dbengine.DBEngine().connect()
             with Session(engine) as session:
-                statement = select(Customers).where(col(Customers.customer_id) == customer.customer_id)
+                statement = select(customers).where(col(customers.customer_id) == customer.customer_id)
                 result = session.exec(statement).one()
                 log.logger.debug('update_Customers() result is : %s' % result)
                 #log.logger.debug(result.__fields__)
@@ -104,7 +104,7 @@ if __name__ == '__main__':
     cus1 = cs.get_Customers(1)
     log.logger.info('cus1 is : %s' % cus1)
     log.logger.info('cus1 type is : %s' % type(cus1))
-    cus2 = Customers(last_name='Jacobs', household_income=120000, phone_number=9177554315, customer_id=1, birthdate='1990-12-13', first_name='Jeremy', gender='Male', email='Jeremy@Gmail.com')
+    cus2 = customers(last_name='Jacobs', household_income=120000, phone_number=9177554315, customer_id=1, birthdate='1990-12-13', first_name='Jeremy', gender='Male', email='Jeremy@Gmail.com')
     log.logger.info('cus2 is : %s' % cus2)
     cs.update_Customers(cus2)
     cus3 = cs.get_Customers(1)
