@@ -171,8 +171,9 @@ class customersService(object):
             whereorfieldscolumns.append(eval(whereor))
             #statement = statement.where(or_(eval(whereor)))
         #statement = statement.where(or_(whereorfieldscolumns))
-        statement = statement.where(or_(eval("col(customers.household_income) > 80001, col(customers.gender) == 'Female'")))
-        #statement = statement.where(or_(col(customers.household_income) > 80001, col(customers.gender) == 'Female'))
+        #statement = statement.where(or_(eval("col(customers.household_income) > 80001, col(customers.gender) == 'Female'")))
+        #statement = statement.where(((customers.household_income > 80001) | (customers.gender == 'Female')))
+        statement = statement.where(eval("((customers.household_income > 80001) & (customers.gender == 'Female'))"))
         #get distinct
         if distutils.util.strtobool(queryjson['distinct'].replace(' ','')):
             statement = statement.distinct()
