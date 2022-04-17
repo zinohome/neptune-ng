@@ -165,8 +165,10 @@ class customersService(object):
         print(whereorfieldslist)
         whereorfieldscolumns = []
         for whereor in whereorfieldslist:
+            print(whereor)
+            print('binaryexpression is: %s' % eval(whereor))
             whereorfieldscolumns.append(eval(whereor))
-        statement = statement.where(or_(*{tuple(whereorfieldscolumns)}))
+        statement = statement.where(or_(tuple(whereorfieldscolumns)))
         #get distinct
         if distutils.util.strtobool(queryjson['distinct'].replace(' ','')):
             statement = statement.distinct()
