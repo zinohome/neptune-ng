@@ -138,7 +138,7 @@ class customersService(object):
         queryjsonstr = '{' \
                        '"queryfields":"customers.first_name,customers.last_name",' \
                        '"distinct":"True",' \
-                       '"where_and":"customers.first_name != \'Jun\'",' \
+                       '"where_and":"customers.first_name != \'Jun\', customers.household_income > 80001",' \
                        '"where_or":"customers.household_income > 80001, customers.gender == \'Female\'",' \
                        '"order_by":"customers.phone_number.asc(), customers.household_income.asc()",' \
                        '"group_by":"last_name",' \
@@ -165,10 +165,13 @@ class customersService(object):
         print(whereorfieldslist)
         whereorfieldscolumns = []
         for whereor in whereorfieldslist:
-            print(whereor)
-            print('binaryexpression is: %s' % eval(whereor))
+            #print(whereor)
+            #print('binaryexpression is: %s' % eval(whereor))
             whereorfieldscolumns.append(eval(whereor))
-        statement = statement.where(or_(tuple(whereorfieldscolumns)))
+            #statement = statement.where(or_(eval(whereor)))
+        #statement = statement.where(or_(whereorfieldscolumns))
+        #statement = statement.where(or_(eval("col(customers.household_income) > 80001, col(customers.gender) == 'Female'")))
+        statement = statement.where(or_(col(customers.household_income) > 80001, col(customers.gender) == 'Female'))
         #get distinct
         if distutils.util.strtobool(queryjson['distinct'].replace(' ','')):
             statement = statement.distinct()
