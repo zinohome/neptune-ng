@@ -9,6 +9,8 @@
 #  @Email   : ibmzhangjun@139.com
 #  @Software: Neptune-NG
 import collections
+import distutils
+
 import simplejson as json
 from sqlalchemy import func, and_, or_, literal_column, column
 
@@ -135,6 +137,7 @@ class customersService(object):
     def query_customers(self):
         queryjsonstr = '{' \
                        '"queryfields":"customers.first_name,customers.last_name",' \
+                       '"distinct":"True",' \
                        '"where_and":"customers.first_name != \'Jun\'",' \
                        '"where_or":"customers.household_income > 80001, customers.gender == \'Female\'",' \
                        '"order_by":"customers.phone_number.asc(), customers.household_income.asc()",' \
@@ -154,6 +157,7 @@ class customersService(object):
         whereandfields = queryjson['where_and']
         whereandfieldslist = tuple(filter(None,whereandfields.replace(' ','').split(',')))
         print(whereandfieldslist)
+        '''
         for whereand in whereandfieldslist:
             statement = statement.where(eval(whereand))
         whereorfields = queryjson['where_or']
@@ -163,6 +167,9 @@ class customersService(object):
         for whereor in whereorfieldslist:
             whereorfieldscolumns.append(eval(whereor))
         statement = statement.where(or_(whereorfieldscolumns))
+        '''
+        if distutils.util.strtobool(queryjson['distinct'].replace(' ','')):
+            statement = statement.distinct()
         #get ordercolumns
         orderfields = queryjson['order_by']
         orderfieldslist = tuple(filter(None,orderfields.replace(' ','').split(',')))
@@ -171,15 +178,13 @@ class customersService(object):
         #get group_by
         #get limit & offset
         statement = statement.limit(queryjson['limit']).offset(queryjson['offset'])
-
-
         log.logger.debug(statement)
 
         try:
             engine = dbengine.DBEngine().connect()
             with Session(engine) as session:
-                statement = select(customers).where(customers.first_name != 'Jun', customers.household_income > 80001).where(or_(customers.last_name != 'Zhang',customers.gender == 'Female')).order_by(eval("customers.phone_number.asc()"),eval("customers.household_income.asc()")).limit(queryjson['limit']).offset(queryjson['offset'])
-                log.logger.debug("1111111 : %s" % statement)
+                #statement = select(customers).where(customers.first_name != 'Jun', customers.household_income > 80001).where(or_(customers.last_name != 'Zhang',customers.gender == 'Female')).order_by(eval("customers.phone_number.asc()"),eval("customers.household_income.asc()")).limit(queryjson['limit']).offset(queryjson['offset'])
+                #log.logger.debug("1111111 : %s" % statement)
                 #statement = select(from_obj=customers, columns=querycolumns).where(customers.first_name != 'Jun',customers.household_income > 80001).where(or_(customers.last_name != 'Zhang')).order_by(ordercolumns).limit(queryjson['limit']).offset(queryjson['offset'])
                 result = session.exec(statement).all()
                 #log.logger.debug('query_customers() result is : %s' % result)
