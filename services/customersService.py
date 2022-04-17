@@ -12,7 +12,7 @@ import collections
 import distutils
 
 import simplejson as json
-from sqlalchemy import func, and_, or_, literal_column, column
+from sqlalchemy import func, and_, or_, literal_column, column, text
 
 from sqlmodel import Session, select, col
 
@@ -153,21 +153,21 @@ class customersService(object):
         if "*" in queryfields:
             queryfields="customers."+",customers.".join(tuple(customers.__fields__.keys()))
         statement = select(from_obj=customers, columns=eval(queryfields))
-        #get where
+        #get where_and
         whereandfields = queryjson['where_and']
         whereandfieldslist = tuple(filter(None,whereandfields.replace(' ','').split(',')))
         print(whereandfieldslist)
-        '''
         for whereand in whereandfieldslist:
             statement = statement.where(eval(whereand))
+        # get where_or
         whereorfields = queryjson['where_or']
         whereorfieldslist = tuple(filter(None, whereorfields.replace(' ', '').split(',')))
         print(whereorfieldslist)
         whereorfieldscolumns = []
         for whereor in whereorfieldslist:
             whereorfieldscolumns.append(eval(whereor))
-        statement = statement.where(or_(whereorfieldscolumns))
-        '''
+        statement = statement.where(or_(*{tuple(whereorfieldscolumns)}))
+        #get distinct
         if distutils.util.strtobool(queryjson['distinct'].replace(' ','')):
             statement = statement.distinct()
         #get ordercolumns
