@@ -15,7 +15,7 @@ from sqlmodel import Field, SQLModel
 from datetime import date, timedelta, time, datetime
 import decimal
 
-class {{ name | lower }}(SQLModel, table=True):
+class {{ name | capitalize }}(SQLModel, table=True):
 {% for column in columns %}
     {% if column.nullable == 'True' %}
         {% if column.primary_key | int > 0 %}

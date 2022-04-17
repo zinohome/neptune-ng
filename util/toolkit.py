@@ -155,6 +155,9 @@ def convertSQLObject(vol, tableschema):
                 cvol[key] = cvol[key]
     return cvol
 
+def validQueryJson(jsonstr):
+    return True
+    #TODO valid jsonstr from query parameter
 
 def uappend(lststr):
     return config.app_config['Application_Config'].app_param_prefix+'{}'.format(lststr)
