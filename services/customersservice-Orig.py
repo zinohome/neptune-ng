@@ -43,13 +43,13 @@ class CustomersService(object):
         return newmodel
 
     def dump_model(self, model):
-        return model.sortjson()
+        return model.sortJson()
 
     def dump_model_list(self, modellist):
         jsonlist = json.loads('{"data":""}')
         jlst = list()
         for model in modellist:
-            jlst.append(model.sortjson())
+            jlst.append(model.sortJson())
         jsonlist['data'] = jlst
         return jsonlist
 
@@ -205,7 +205,7 @@ if __name__ == '__main__':
     custome_zhangjun = cs.new_model(customer_json)
     log.logger.info('Customer is : %s' % custome_zhangjun)
     #log.logger.debug('Customer JSON is : %s' % cs.dump_model(custome_zhangjun))
-    log.logger.debug('Customer JSON is : %s' % custome_zhangjun.sortjson())
+    log.logger.debug('Customer JSON is : %s' % custome_zhangjun.sortJson())
     log.logger.error('====================== create_Customers() ======================')
     newid = cs.create_Customers(custome_zhangjun)
     log.logger.info('The New Customer ID is : %s' % newid)

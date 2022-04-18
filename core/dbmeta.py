@@ -470,7 +470,7 @@ class DBMeta(object):
                 template = env.get_template('sqlmodel_tmpl.py')
                 gencode = template.render(dtable.table2json())
                 #log.logger.debug(gencode)
-                modelsfilepath = os.path.abspath(os.path.join(modelspath, tbl.capitalize()+".py"))
+                modelsfilepath = os.path.abspath(os.path.join(modelspath, tbl.lower()+".py"))
                 with open(modelsfilepath, 'w', encoding='utf-8') as gencodefile:
                     gencodefile.write(gencode)
                     gencodefile.close()
@@ -505,7 +505,7 @@ class DBMeta(object):
                 template = env.get_template('sqlmodel_tmpl.py')
                 gencode = template.render(dtable.table2json())
                 #log.logger.debug(gencode)
-                modelsfilepath = os.path.abspath(os.path.join(modelspath, tbl.capitalize()+"_udf"+".py"))
+                modelsfilepath = os.path.abspath(os.path.join(modelspath, tbl.lower()+"_udf"+".py"))
                 with open(modelsfilepath, 'w', encoding='utf-8') as gencodefile:
                     gencodefile.write(gencode)
                     gencodefile.close()
@@ -519,7 +519,7 @@ class DBMeta(object):
                 template = env.get_template('sqlmodel_tmpl.py')
                 gencode = template.render(dview.table2json())
                 #log.logger.debug(gencode)
-                modelsfilepath = os.path.abspath(os.path.join(modelspath, tbl.capitalize()+"_udf"+".py"))
+                modelsfilepath = os.path.abspath(os.path.join(modelspath, tbl.lower()+"_udf"+".py"))
                 with open(modelsfilepath, 'w', encoding='utf-8') as gencodefile:
                     gencodefile.write(gencode)
                     gencodefile.close()
@@ -565,7 +565,7 @@ if __name__ == '__main__':
     log.logger.debug(cfg['Database_Config'].db_schema)
     meta = DBMeta()
     metadata = meta.metadata
-    otable = meta.gettable('customers')
+    otable = meta.gettable('Customers')
     log.logger.debug(meta.get_tables())
     log.logger.debug(meta.get_views())
     meta.gen_dbdirgram()

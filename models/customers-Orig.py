@@ -15,6 +15,19 @@ from sqlmodel import Field, SQLModel
 from datetime import date, timedelta, time, datetime
 import decimal
 
+from config import config
+from core.dbmeta import DBMeta
+from util import log, toolkit
+
+'''config'''
+cfg = config.app_config
+
+'''logging'''
+log = log.Logger(level=cfg['Application_Config'].app_log_level)
+
+'''meta'''
+meta = DBMeta()
+
 class Customers(SQLModel, table=True):
     first_name: str = Field(sa_column=Column("first_name", default=None, primary_key=False))
     last_name: str = Field(sa_column=Column("last_name", default=None, primary_key=False))
@@ -25,5 +38,11 @@ class Customers(SQLModel, table=True):
     email: Optional[str] = Field(sa_column=Column("email", default=None, primary_key=False))
     customer_id: Optional[int] = Field(default=None, primary_key=True)
 
-    def sortjson(self):
+    def sortJson(self):
         return self.json(sort_keys=True)
+
+    def getTableSchema(self):
+        return meta.gettable('Customers')
+
+    def getPrimaryKeys(self):
+        return meta.gettable('Customers').primarykeys

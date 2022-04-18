@@ -15,6 +15,19 @@ from sqlmodel import Field, SQLModel
 from datetime import date, timedelta, time, datetime
 import decimal
 
+from config import config
+from core.dbmeta import DBMeta
+from util import log, toolkit
+
+'''config'''
+cfg = config.app_config
+
+'''logging'''
+log = log.Logger(level=cfg['Application_Config'].app_log_level)
+
+'''meta'''
+meta = DBMeta()
+
 class {{ name | capitalize }}(SQLModel, table=True):
 {% for column in columns %}
     {% if column.nullable == 'True' %}
@@ -32,5 +45,11 @@ class {{ name | capitalize }}(SQLModel, table=True):
     {% endif %}
 {% endfor %}
 
-    def sortjson(self):
+    def sortJson(self):
         return self.json(sort_keys=True)
+
+    def getTableSchema(self):
+        return meta.gettable('{{ name }}')
+
+    def getPrimaryKeys(self):
+        return meta.gettable('{{ name }}').primarykeys
