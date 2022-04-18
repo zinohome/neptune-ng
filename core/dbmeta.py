@@ -474,10 +474,6 @@ class DBMeta(object):
                 with open(modelsfilepath, 'w', encoding='utf-8') as gencodefile:
                     gencodefile.write(gencode)
                     gencodefile.close()
-                modelsfilepath = os.path.abspath(os.path.join(modelspath, tbl.capitalize()+"_udf"+".py"))
-                with open(modelsfilepath, 'w', encoding='utf-8') as gencodefile:
-                    gencodefile.write(gencode)
-                    gencodefile.close()
         except Exception as exp:
             log.logger.error('Exception at gen_models() %s ' % exp)
         try:
@@ -492,6 +488,37 @@ class DBMeta(object):
                 with open(modelsfilepath, 'w', encoding='utf-8') as gencodefile:
                     gencodefile.write(gencode)
                     gencodefile.close()
+        except Exception as exp:
+            log.logger.error('Exception at gen_models() %s ' % exp)
+
+
+    def gen_udfmodels(self):
+        basepath = os.path.abspath(os.path.dirname(os.path.abspath(__file__)))
+        apppath = os.path.abspath(os.path.join(basepath, os.pardir))
+        tmplpath = os.path.abspath(os.path.join(apppath, 'tmpl'))
+        modelspath = os.path.abspath(os.path.join(apppath, 'models'))
+        try:
+            tbls = self.get_tables()
+            for tbl in tbls:
+                dtable = self.gettable(tbl)
+                env = Environment(loader=FileSystemLoader(tmplpath), trim_blocks=True, lstrip_blocks=True)
+                template = env.get_template('sqlmodel_tmpl.py')
+                gencode = template.render(dtable.table2json())
+                #log.logger.debug(gencode)
+                modelsfilepath = os.path.abspath(os.path.join(modelspath, tbl.capitalize()+"_udf"+".py"))
+                with open(modelsfilepath, 'w', encoding='utf-8') as gencodefile:
+                    gencodefile.write(gencode)
+                    gencodefile.close()
+        except Exception as exp:
+            log.logger.error('Exception at gen_models() %s ' % exp)
+        try:
+            views = self.get_views()
+            for view in views:
+                dview = self.gettable(view)
+                env = Environment(loader=FileSystemLoader(tmplpath), trim_blocks=True, lstrip_blocks=True)
+                template = env.get_template('sqlmodel_tmpl.py')
+                gencode = template.render(dview.table2json())
+                #log.logger.debug(gencode)
                 modelsfilepath = os.path.abspath(os.path.join(modelspath, tbl.capitalize()+"_udf"+".py"))
                 with open(modelsfilepath, 'w', encoding='utf-8') as gencodefile:
                     gencodefile.write(gencode)
@@ -545,6 +572,7 @@ if __name__ == '__main__':
     meta.gen_dbdirgramcanvas()
     meta.gen_ddl()
     meta.gen_models()
+    meta.gen_udfmodels()
 
     '''
     log.logger.debug(otable.table2json())
