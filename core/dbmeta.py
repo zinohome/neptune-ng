@@ -62,7 +62,7 @@ class DBMeta(object):
                 self.gen_schema()
         self.load_schema()
         self.gen_dbdirgramcanvas()
-        #self.gen_ddl()
+        self.gen_ddl()
 
     @property
     def schema(self):
