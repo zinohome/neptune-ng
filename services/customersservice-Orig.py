@@ -307,7 +307,7 @@ if __name__ == '__main__':
                    '"distinct":"True",' \
                    '"where":"((Customers.first_name != \'Jun\') | (Customers.household_income > 80001)) & (Customers.last_name != \'Zhang\')",' \
                    '"order_by":"Customers.phone_number.asc(), Customers.household_income.asc()",' \
-                   '"group_by":"last_name",' \
+                   '"group_by":"Customers.last_name",' \
                    '"limit":2,' \
                    '"offset":2,' \
                    '"include_count":"True",' \
