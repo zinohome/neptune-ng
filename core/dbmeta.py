@@ -62,7 +62,7 @@ class DBMeta(object):
                 self.gen_schema()
         self.load_schema()
         self.gen_dbdirgramcanvas()
-        self.gen_ddl()
+        #self.gen_ddl()
 
     @property
     def schema(self):
@@ -397,7 +397,7 @@ class DBMeta(object):
         ddlstr = ''
         try:
             if metadata is not None:
-                log.logger.debug("Generate Schema from : [ %s ] with db schema "
+                log.logger.debug("Generate DLL from : [ %s ] with db schema "
                                  "[ %s ]" % (cfg['Database_Config'].db_name, self._schema))
                 table_list_set = set(toolkit.to_list(cfg['Schema_Config'].schema_fetch_tables))
                 table_names = inspector.get_table_names()
@@ -505,7 +505,7 @@ class DBMeta(object):
                 template = env.get_template('sqlmodel_tmpl.py')
                 gencode = template.render(dtable.table2json())
                 #log.logger.debug(gencode)
-                modelsfilepath = os.path.abspath(os.path.join(modelspath, tbl.lower()+"_udf"+".py"))
+                modelsfilepath = os.path.abspath(os.path.join(modelspath, tbl.lower() + "_udf.py"))
                 with open(modelsfilepath, 'w', encoding='utf-8') as gencodefile:
                     gencodefile.write(gencode)
                     gencodefile.close()
@@ -519,7 +519,7 @@ class DBMeta(object):
                 template = env.get_template('sqlmodel_tmpl.py')
                 gencode = template.render(dview.table2json())
                 #log.logger.debug(gencode)
-                modelsfilepath = os.path.abspath(os.path.join(modelspath, tbl.lower()+"_udf"+".py"))
+                modelsfilepath = os.path.abspath(os.path.join(modelspath, tbl.lower() + "_udf.py"))
                 with open(modelsfilepath, 'w', encoding='utf-8') as gencodefile:
                     gencodefile.write(gencode)
                     gencodefile.close()
@@ -532,7 +532,68 @@ class DBMeta(object):
         apppath = os.path.abspath(os.path.join(basepath, os.pardir))
         tmplpath = os.path.abspath(os.path.join(apppath, 'tmpl'))
         servicespath = os.path.abspath(os.path.join(apppath, 'services'))
-        pass
+        try:
+            tbls = self.get_tables()
+            for tbl in tbls:
+                dtable = self.gettable(tbl)
+                env = Environment(loader=FileSystemLoader(tmplpath), trim_blocks=True, lstrip_blocks=True)
+                template = env.get_template('sqltableservice_tmpl.py')
+                gencode = template.render(dtable.table2json())
+                #log.logger.debug(gencode)
+                modelsfilepath = os.path.abspath(os.path.join(servicespath, tbl.lower() + "service.py"))
+                with open(modelsfilepath, 'w', encoding='utf-8') as gencodefile:
+                    gencodefile.write(gencode)
+                    gencodefile.close()
+        except Exception as exp:
+            log.logger.error('Exception at gen_services() %s ' % exp)
+        try:
+            views = self.get_views()
+            for view in views:
+                dview = self.gettable(view)
+                env = Environment(loader=FileSystemLoader(tmplpath), trim_blocks=True, lstrip_blocks=True)
+                template = env.get_template('sqlviewservice_tmpl.py')
+                gencode = template.render(dview.table2json())
+                #log.logger.debug(gencode)
+                modelsfilepath = os.path.abspath(os.path.join(servicespath, view.lower() + "service.py"))
+                with open(modelsfilepath, 'w', encoding='utf-8') as gencodefile:
+                    gencodefile.write(gencode)
+                    gencodefile.close()
+        except Exception as exp:
+            log.logger.error('Exception at gen_services() %s ' % exp)
+
+    def gen_udfservices(self):
+        basepath = os.path.abspath(os.path.dirname(os.path.abspath(__file__)))
+        apppath = os.path.abspath(os.path.join(basepath, os.pardir))
+        tmplpath = os.path.abspath(os.path.join(apppath, 'tmpl'))
+        servicespath = os.path.abspath(os.path.join(apppath, 'services'))
+        try:
+            tbls = self.get_tables()
+            for tbl in tbls:
+                dtable = self.gettable(tbl)
+                env = Environment(loader=FileSystemLoader(tmplpath), trim_blocks=True, lstrip_blocks=True)
+                template = env.get_template('sqltableservice_tmpl.py')
+                gencode = template.render(dtable.table2json())
+                #log.logger.debug(gencode)
+                modelsfilepath = os.path.abspath(os.path.join(servicespath, tbl.lower() + "_udfservice.py"))
+                with open(modelsfilepath, 'w', encoding='utf-8') as gencodefile:
+                    gencodefile.write(gencode)
+                    gencodefile.close()
+        except Exception as exp:
+            log.logger.error('Exception at gen_services() %s ' % exp)
+        try:
+            views = self.get_views()
+            for view in views:
+                dview = self.gettable(view)
+                env = Environment(loader=FileSystemLoader(tmplpath), trim_blocks=True, lstrip_blocks=True)
+                template = env.get_template('sqlviewservice_tmpl.py')
+                gencode = template.render(dview.table2json())
+                #log.logger.debug(gencode)
+                modelsfilepath = os.path.abspath(os.path.join(servicespath, view.lower() + "_udfservice.py"))
+                with open(modelsfilepath, 'w', encoding='utf-8') as gencodefile:
+                    gencodefile.write(gencode)
+                    gencodefile.close()
+        except Exception as exp:
+            log.logger.error('Exception at gen_services() %s ' % exp)
 
     def response_dbdiagram(self, filename, canvasonly=False):
         basepath = os.path.abspath(os.path.dirname(os.path.abspath(__file__)))
@@ -573,6 +634,8 @@ if __name__ == '__main__':
     meta.gen_ddl()
     meta.gen_models()
     meta.gen_udfmodels()
+    meta.gen_services()
+    meta.gen_udfservices()
 
     '''
     log.logger.debug(otable.table2json())
