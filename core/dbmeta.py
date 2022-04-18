@@ -492,6 +492,10 @@ class DBMeta(object):
                 with open(modelsfilepath, 'w', encoding='utf-8') as gencodefile:
                     gencodefile.write(gencode)
                     gencodefile.close()
+                modelsfilepath = os.path.abspath(os.path.join(modelspath, tbl.capitalize()+"_udf"+".py"))
+                with open(modelsfilepath, 'w', encoding='utf-8') as gencodefile:
+                    gencodefile.write(gencode)
+                    gencodefile.close()
         except Exception as exp:
             log.logger.error('Exception at gen_models() %s ' % exp)
 
