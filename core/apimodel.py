@@ -53,9 +53,3 @@ class PutRecordBody(BaseModel):
         anystr_strip_whitespace = True
         optional_by_default = False
 
-class TablePutByIdBody(BaseModel):
-    fieldvalue: str = None
-    idfield: str = None
-
-class UserFuncPostBody(BaseModel):
-    sqlparam: str = None
