@@ -1,0 +1,197 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Settings - Users  {% endblock %}
+
+<!-- Element injected in the BODY element -->
+{% block body_class %} sidebar-mini layout-navbar-fixed layout-footer-fixed layout-fixed text-sm {% endblock body_class %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="/static/googlefontscss.css">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+  <!-- DataTables -->
+  <link rel="stylesheet" href="/static/assets/plugins/datatables-bs4/css/dataTables.bootstrap4.css">
+  <link rel="stylesheet" href="/static/assets/plugins/datatables-buttons/css/buttons.bootstrap4.css">
+  <link rel="stylesheet" href="/static/assets/plugins/datatables-select/css/select.bootstrap4.css">
+  <link rel="stylesheet" href="/static/assets/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+  <!-- Carbon Theme style -->
+  <link rel="stylesheet" href="/static/assets/css/carbon-components.min.css">
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>Users</h1>
+          </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a href="index">Home</a></li>
+              <li class="breadcrumb-item active">Settings</li>
+              <li class="breadcrumb-item active">Users</li>
+            </ol>
+          </div>
+        </div>
+      </div><!-- /.container-fluid -->
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title"> Users </h3>
+              </div>
+              <!-- /.card-header -->
+              <div class="card-body">
+                <table id="datatable" class="table table-bordered table-hover">
+                  <thead>
+                  <tr>
+                    {% for userskey in userskeylist %}
+                    <th>{{ userskey }}</th>
+                    {% endfor %}
+                  </tr>
+                  </thead>
+                  <tbody>
+                  </tbody>
+                </table>
+              </div>
+              <!-- /.card-body -->
+            </div>
+            <!-- /.card -->
+          </div>
+          <!-- /.col -->
+        </div>
+        <!-- /.row -->
+      </div>
+      <!-- /.container-fluid -->
+    </section>
+    <!-- /.content -->
+  </div>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+  <!-- jQuery -->
+  <script src="/static/assets/plugins/jquery/jquery.js"></script>
+  <!-- Bootstrap 4 -->
+  <script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.js"></script>
+  <!-- DataTables -->
+  <script src="/static/assets/plugins/datatables/jquery.dataTables.min.js"></script>
+  <script src="/static/assets/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
+  <script src="/static/assets/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+  <script src="/static/assets/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
+  <!-- DataTables altEditor -->
+  <script src="/static/assets/plugins/datatables-select/js/dataTables.select.min.js"></script>
+  <script src="/static/assets/plugins/datatables-select/js/select.bootstrap4.min.js"></script>
+  <script src="/static/assets/plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
+  <script src="/static/assets/plugins/datatables-buttons/js/buttons.bootstrap4.min.js"></script>
+  <script src="/static/assets/plugins/edittable/dataTables.altEditor.free.js"></script>
+  <!-- AdminLTE App -->
+  <script src="/static/assets/js/adminlte.min.js"></script>
+  <!-- page script -->
+  <script>
+    $(function () {
+      $("#datatable").DataTable({
+        "language": {
+            "processing": "processing ......",
+            "lengthMenu": "Display _MENU_ records per page",
+            "zeroRecords": "Nothing found - sorry",
+            "info": "Showing page _PAGE_ of _PAGES_",
+            "infoEmpty": "No records available",
+            "infoFiltered": "(filtered from _MAX_ total records)"
+        },
+        "processing": true,
+        "serverSide": true,
+        "ajax": "/admin/settings-users/getdata",
+        "responsive": true,
+        "autoWidth": true,
+        "paging": true,
+        "lengthChange": true,
+        "searching": false,
+        "ordering": false,
+        "info": true,
+        "select": 'single',
+        "dom": '<lfBr<t>ip>',        // Needs button container
+        "buttons": [
+            {
+                text: 'Add',
+                name: 'add'        // do not change name
+            },
+            {
+                extend: 'selected', // Bind to Selected row
+                text: 'Edit',
+                name: 'edit'        // do not change name
+            },
+            {
+                extend: 'selected', // Bind to Selected row
+                text: 'Delete',
+                name: 'delete'      // do not change name
+            },
+            {
+                text: 'Refresh',
+                name: 'refresh'      // do not change name
+            }
+        ],
+        "altEditor": true,
+        "lengthMenu": [[10, 25, 50, 100], [10, 25, 50, 100]],
+        onAddRow: function(datatable, rowdata, success, error) {
+            $.ajax({
+                // a tipycal url would be / with type='POST'
+                url: "/admin/settings-users/postdata",
+                type: 'POST',
+                data: rowdata,
+                success: success,
+                error: error
+            });
+        },
+        onDeleteRow: function(datatable, rowdata, success, error) {
+            $.ajax({
+                // a tipycal url would be /{id} with type='DELETE'
+                url: "/admin/settings-users/deletedata",
+                type: 'DELETE',
+                data: rowdata,
+                success: success,
+                error: error
+            });
+        },
+        onEditRow: function(datatable, rowdata, success, error) {
+            $.ajax({
+                // a tipycal url would be /{id} with type='PUT'
+                url: "/admin/settings-users/putdata",
+                type: 'PUT',
+                data: rowdata,
+                success: success,
+                error: error
+            });
+        },
+        "columns": [
+          { "data": "username", "name": "username", "title": "username", "visible": true, "targets": "username", "unique":true, "uniqueMsg":"username must unique !" },
+          { "data": "full_name", "name": "full_name", "title": "full_name", "visible": true, "targets": "full_name" },
+          { "data": "email", "name": "email", "title": "email", "visible": true, "targets": "email" },
+          { "data": "hashed_password", "name": "hashed_password", "title": "hashed_password", "visible": false, "targets": "hashed_password", "type":"hidden" },
+          { "data": "role", "name": "role", "title": "role", "visible": true, "targets": "role", "type":"select", "options":{"Superadmin":"Superadmin", "Writer":"Writer", "Reader":"Reader"} },
+          { "data": "disabled", "name": "disabled", "title": "disabled", "visible": true, "targets": "disabled", "type":"select", "options":{"True":"True", "False":"False"}},
+          { "data": "password", "name": "password", "title": "password", "visible": false, "targets": "password", "type":"password" },
+          { "data": "password_repeat", "name": "password_repeat", "title": "password_repeat", "visible": false, "targets": "password_repeat", "type":"password" },
+          { "data": "oldname", "name": "oldname", "title": "User", "visible": false, "targets": "oldname", "type":"hidden" }
+          ]
+      });
+    });
+  </script>
+{% endblock javascripts %}

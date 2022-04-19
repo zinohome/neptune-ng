@@ -84,7 +84,9 @@ def shutdown_event():
         clear_meta_cache()
 
 '''Admin_app'''
-#TODO
+DEBUG = cfg['Admin_Config'].DEBUG
+get_config_mode = 'Debug'
+
 
 '''CORS'''
 origins = []

@@ -1,0 +1,177 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Settings {% endblock %}
+
+<!-- Element injected in the BODY element -->
+{% block body_class %} sidebar-mini layout-navbar-fixed layout-footer-fixed layout-fixed text-sm {% endblock body_class %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="/static/googlefontscss.css">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+  <!-- pace-progress -->
+  <link rel="stylesheet" href="/static/assets/plugins/pace-progress/themes/black/pace-theme-flat-top.css">
+  <!-- adminlte-->
+  <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+  <!-- Carbon Theme style -->
+  <link rel="stylesheet" href="/static/assets/css/carbon-components.min.css">
+  <!-- Select2 -->
+  <link rel="stylesheet" href="/static/assets/plugins/select2/css/select2.min.css">
+
+{% endblock stylesheets %}
+
+{% block content %}  
+
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>Settings</h1>
+          </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a href="index">Home</a></li>
+              <li class="breadcrumb-item active">Settings</li>
+            </ol>
+          </div>
+        </div>
+      </div><!-- /.container-fluid -->
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+
+      <!-- Default box -->
+      <div class="card">
+        <form name="settingsForm" id="settingsForm" role="form" action="/admin/settings-config/savedata" method="POST">
+        <div class="card-header">
+          <h3 class="card-title">Settings : Restart Server to take effect !</h3>
+        </div>
+        <div class="card-body">
+            <div class="card card-primary card-outline card-outline-tabs">
+              <div class="card-header p-0 pt-1 border-bottom-0">
+                <ul class="nav nav-tabs" id="custom-tabs-three-tab" role="tablist">
+                  {% for confname in confignamelist %}
+                  {% if confname == 'Application_Config' %}
+                  <li class="nav-item">
+                    <a class="nav-link active" id="{{confname}}-tab" data-toggle="pill" href="#{{confname}}" role="tab" aria-controls="{{confname}}" aria-selected="true">{{ confname|replace('_Config', '') }}</a>
+                  </li>
+                  {% else %}
+                  <li class="nav-item">
+                    <a class="nav-link" id="{{confname}}-tab" data-toggle="pill" href="#{{confname}}" role="tab" aria-controls="{{confname}}" aria-selected="false">{{ confname|replace('_Config', '') }}</a>
+                  </li>
+                  {% endif %}
+                  {% endfor %}
+                </ul>
+              </div>
+              <div class="card-body">
+                <div class="tab-content" id="custom-tabs-three-tabContent">
+                  {% for confname in confignamelist %}
+                  {% if confname == 'Application_Config' %}
+                  <div class="tab-pane fade show active" id="{{confname}}" role="tabpanel" aria-labelledby="{{confname}}-tab">
+                    <div class="form-group row">
+                      <div class="col-sm-3 text-primary"><label for="configname" >Config Name</label></div>
+                      <div class="col-sm-4 text-danger"><label for="runtimevalue" >Runtime Value</label></div>
+                      <div class="col-sm-5 text-info"><label for="configvalue" >Config Value</label></div>
+                    </div>
+                    {% for item in cfgjson[confname] %}
+                     {% if item not in ['app_name','app_version','app_description','app_param_prefix'] %}
+                    <div class="form-group row">
+                      <div class="col-sm-3 text-primary">{{item}}</div>
+                      <div class="col-sm-4 text-danger">{{cfgjson[confname][item]|string}}</div>
+                      <div class="col-sm-5 text-info">
+                      {% if cfgjson[confname][item]|string in ['True','False'] %}
+                      <select class="form-control select2" style="width: 100%;" name="{{item}}" id="{{item}}" value="{{cfgini[item]|string}}">
+                        <option value="True"{% if cfgini[item]|string=='True' %} selected="selected"{% endif %}>True</option>
+                        <option value="False"{% if cfgini[item]|string=='False' %} selected="selected"{% endif %}>False</option>
+                      </select>
+                      {% elif cfgjson[confname][item] in ['TRACE','DEBUG','INFO','WARNING','ERROR','CRITICAL'] %}
+                      <select class="form-control select2" style="width: 100%;" name="{{item}}" id="{{item}}" value="{{cfgini[item]|string}}">
+                        <option value="TRACE"{% if cfgini[item]|string=='TRACE' %} selected="selected"{% endif %}>TRACE</option>
+                        <option value="DEBUG"{% if cfgini[item]|string=='DEBUG' %} selected="selected"{% endif %}>DEBUG</option>
+                        <option value="INFO"{% if cfgini[item]|string=='INFO' %} selected="selected"{% endif %}>INFO</option>
+                        <option value="WARNING"{% if cfgini[item]|string=='WARNING' %} selected="selected"{% endif %}>WARNING</option>
+                        <option value="ERROR"{% if cfgini[item]|string=='ERROR' %} selected="selected"{% endif %}>ERROR</option>
+                        <option value="CRITICAL"{% if cfgini[item]|string=='CRITICAL' %} selected="selected"{% endif %}>CRITICAL</option>
+                      </select>
+                      {% else %}
+                      <input type="text" class="form-control" name="{{item}}" id="{{item}}" value="{{cfgini[item]|string}}">
+                      {% endif %}
+                    </div>
+                    </div>
+                     {% endif %}
+                     {% endfor %}
+                  </div>
+                  {% else %}
+                  <div class="tab-pane fade" id="{{confname}}" role="tabpanel" aria-labelledby="{{confname}}-tab">
+                    <div class="form-group row">
+                      <div class="col-sm-3 text-primary"><label for="configname" >Config Name</label></div>
+                      <div class="col-sm-4 text-danger"><label for="runtimevalue" >Runtime Value</label></div>
+                      <div class="col-sm-5 text-info"><label for="configvalue" >Config Value</label></div>
+                    </div>
+                    {% for item in cfgjson[confname] %}
+                    <div class="form-group row">
+                      <div class="col-sm-3 text-primary">{{item}}</div>
+                      <div class="col-sm-4 text-danger">{{cfgjson[confname][item]|string}}</div>
+                      <div class="col-sm-5 text-info">
+                      {% if cfgjson[confname][item]|string in ['True','False'] %}
+                      <select class="form-control select2" style="width: 100%;" name="{{item}}" id="{{item}}" value="{{cfgini[item]|string}}">
+                        <option value="True"{% if cfgini[item]|string=='True' %} selected="selected"{% endif %}>True</option>
+                        <option value="False"{% if cfgini[item]|string=='False' %} selected="selected"{% endif %}>False</option>
+                      </select>
+                      {% elif cfgjson[confname][item] in ['TRACE','DEBUG','INFO','WARNING','ERROR','CRITICAL'] %}
+                      <select class="form-control select2" style="width: 100%;" name="{{item}}" id="{{item}}" value="{{cfgini|string}}">
+                        <option value="TRACE"{% if cfgini[item]|string=='TRACE' %} selected="selected"{% endif %}>TRACE</option>
+                        <option value="DEBUG"{% if cfgini[item]|string=='DEBUG' %} selected="selected"{% endif %}>DEBUG</option>
+                        <option value="INFO"{% if cfgini[item]|string=='INFO' %} selected="selected"{% endif %}>INFO</option>
+                        <option value="WARNING"{% if cfgini[item]|string=='WARNING' %} selected="selected"{% endif %}>WARNING</option>
+                        <option value="ERROR"{% if cfgini[item]|string=='ERROR' %} selected="selected"{% endif %}>ERROR</option>
+                        <option value="CRITICAL"{% if cfgini[item]|string=='CRITICAL' %} selected="selected"{% endif %}>CRITICAL</option>
+                      </select>
+                      {% else %}
+                      <input type="text" class="form-control" name="{{item}}" id="{{item}}" value="{{cfgini[item]|string}}">
+                      {% endif %}
+                    </div>
+                    </div>
+                     {% endfor %}
+                  </div>
+                  {% endif %}
+                  {% endfor %}
+                </div>
+              </div>
+              <!-- /.card -->
+            </div>
+        </div>
+        <!-- /.card-body -->
+        <div class="modal-footer">
+          <button type="reset" data-content="reset" class="btn btn-default button secondary" id="RestBtn">Reset</button>
+          <button type="submit" data-content="submit" class="btn btn-primary button" id="SaveBtn" form="settingsForm">Save</button>
+        </div>
+        </form>
+      </div>
+      <!-- /.card -->
+
+    </section>
+    <!-- /.content -->
+  </div>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+  <!-- jQuery -->
+  <script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+  <!-- Bootstrap 4 -->
+  <script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <!-- pace-progress -->
+  <script src="/static/assets/plugins/pace-progress/pace.min.js"></script>
+  <!-- AdminLTE App -->
+  <script src="/static/assets/js/adminlte.min.js"></script>
+
+{% endblock javascripts %}

@@ -1,0 +1,114 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Database Diagram {% endblock %}
+
+<!-- Element injected in the BODY element -->
+{% block body_class %} sidebar-mini layout-navbar-fixed layout-footer-fixed layout-fixed text-sm {% endblock body_class %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="/static/googlefontscss.css">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+  <!-- pace-progress -->
+  <link rel="stylesheet" href="/static/assets/plugins/pace-progress/themes/black/pace-theme-flat-top.css">
+  <!-- adminlte-->
+  <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+  <!-- Carbon Theme style -->
+  <link rel="stylesheet" href="/static/assets/css/carbon-components.min.css">
+
+{% endblock stylesheets %}
+
+{% block content %}  
+
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>DataBase Diagram</h1>
+          </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a href="index">Home</a></li>
+              <li class="breadcrumb-item active">DataBase Diagram</li>
+            </ol>
+          </div>
+        </div>
+      </div><!-- /.container-fluid -->
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+
+      <!-- Default box -->
+      <div class="card">
+          <erd-editor width="1065" height="600" class="card-body"></erd-editor>
+        <!-- /.card-body -->
+      </div>
+      <!-- /.card -->
+
+    </section>
+    <!-- /.content -->
+  </div>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+  <!-- jQuery -->
+  <script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+  <!-- Bootstrap 4 -->
+  <script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <!-- pace-progress -->
+  <script src="/static/assets/plugins/pace-progress/pace.min.js"></script>
+  <!-- AdminLTE App -->
+  <script src="/static/assets/js/adminlte.min.js"></script>
+  <script src="/static/assets/js/vuerd-mod.js"></script>
+  <script src="/static/assets/js/generate-template.js"></script>
+  <script>
+    const { extension } = window['vuerd'];
+    const { generateTemplatePanel } = window['@vuerd/plugin-generate-template'];
+    extension({
+      panels: [generateTemplatePanel()],
+    });
+    const editor = document.querySelector('erd-editor');
+    editor.readonly = false;
+    editor.automaticLayout = true;
+    editor.setTheme({
+      canvas: 'white',
+      table: '#eee8d5',
+      tableActive: '#657b83',
+      focus: '#657b83',
+      keyPk: '#b4b400',
+      keyFk: '#dda8b1',
+      keyPfk: '#60b9c4',
+      font: '#586e75',
+      fontActive: '#000000',
+      fontPlaceholder: 'rgba(88, 110, 117, 0.67)',
+      contextmenu: '#eee8d5',
+      contextmenuActive: '#dfca88',
+      edit: '#ffc107',
+      columnSelect: '#dfca88',
+      columnActive: 'rgb(223, 202, 136)',
+      minimapShadow: '#a8a8a8',
+      scrollbarThumb: 'rgba(100, 100, 100, 0.4)',
+      scrollbarThumbActive: 'rgba(100, 100, 100, 0.7)',
+      menubar: 'light',
+      visualization: '#fdf6e3',
+});
+    fetch("/api/v1/_schema/dbdll")
+      .then((response) => response.json())
+      .then((data) => editor.loadSQLDDL(decodeURIComponent(escape(atob(data.content)))));
+
+    window.addEventListener('resize', () => {
+      editor.width = 1065;
+      editor.height = window.innerHeight-218;
+    });
+    window.dispatchEvent(new Event('resize'));
+  </script>
+{% endblock javascripts %}
