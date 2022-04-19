@@ -74,8 +74,8 @@ async def startup_event():
         clear_meta_cache()
     if cfg['Application_Config'].app_load_metadat_on_load:
         meta = dbmeta.DBMeta()
-        #meta.gen_models()
-        #meta.gen_services()
+        meta.gen_models()
+        meta.gen_services()
 
 @app.on_event("shutdown")
 def shutdown_event():

@@ -97,7 +97,7 @@ class {{ name | capitalize }}Service(object):
             queryjson = json.loads(querystr)
             log.logger.debug('The query JSON is: %s' % queryjson)
             #add querycolumns
-            fullqueryfields = "Customers." + ",Customers.".join(tuple(Customers.__fields__.keys()))
+            fullqueryfields = "{{ name | capitalize }}." + ",{{ name | capitalize }}.".join(tuple({{ name | capitalize }}.__fields__.keys()))
             queryfields = fullqueryfields
             querystr = queryjson['queryfields'] if 'queryfields' in queryjson else None
             if querystr is not None:
