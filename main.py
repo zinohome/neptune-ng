@@ -20,12 +20,15 @@ from fastapi import FastAPI, Depends, HTTPException, Header
 from fastapi.openapi.docs import get_swagger_ui_html
 import simplejson as json
 from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.middleware.wsgi import WSGIMiddleware
+from flask import Flask
 from starlette import status
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import FileResponse, JSONResponse
 from starlette.staticfiles import StaticFiles
 from starlette.status import HTTP_401_UNAUTHORIZED, HTTP_404_NOT_FOUND
 
+from admin.apps import login_manager
 from auth import users
 from config import config
 from core import dbmeta, security, apimodel, dbengine
@@ -86,7 +89,16 @@ def shutdown_event():
 '''Admin_app'''
 DEBUG = cfg['Admin_Config'].DEBUG
 get_config_mode = 'Debug'
+admin_app = Flask(__name__, template_folder='admin/apps/templates', static_folder='admin/apps/static')
+admin_app.config.from_object(cfg['Admin_Config'])
+# login
+login_manager.init_app(admin_app)
+# blueprint
+for module_name in ('authentication', 'config', 'data', 'home'):
+    module = importlib.import_module('admin.apps.{}.routes'.format(module_name))
+    admin_app.register_blueprint(module.blueprint)
 
+app.mount("/admin", WSGIMiddleware(admin_app))
 
 '''CORS'''
 origins = []
