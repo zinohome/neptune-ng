@@ -24,7 +24,7 @@ from fastapi.middleware.wsgi import WSGIMiddleware
 from flask import Flask
 from starlette import status
 from starlette.middleware.cors import CORSMiddleware
-from starlette.responses import FileResponse, JSONResponse
+from starlette.responses import FileResponse, JSONResponse, RedirectResponse
 from starlette.staticfiles import StaticFiles
 from starlette.status import HTTP_401_UNAUTHORIZED, HTTP_404_NOT_FOUND
 
@@ -125,12 +125,16 @@ if cfg['Application_Config'].app_cors_origins:
          include_in_schema=False)
 async def app_root():
     log.logger.debug('Access \'/\' : run in app_root()')
+    '''
     return {
         "Application_Name": cfg['Application_Config'].app_name,
         "Version": cfg['Application_Config'].app_version,
         "Author": "ibmzhangjun@139.com",
         "Description": cfg['Application_Config'].app_description
     }
+    '''
+    response = RedirectResponse(url="/admin")
+    return response
 
 @app.get('/favicon.ico', include_in_schema=False)
 async def favicon():

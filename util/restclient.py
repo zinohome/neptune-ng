@@ -133,10 +133,11 @@ class NeptuneClient():
             api.api_root_url = self.api_root_url + url_prefix
             api.add_resource(resource_name=resource_name)
             try:
-                res = api._resources[api.correct_attribute_name(resource_name)]
-                # log.logger.debug(res.actions)
-                # log.logger.debug(res.get_action_full_url(action))
-                # log.logger.debug(res.get_action(action))
+                #res = api._resources[api.correct_attribute_name(resource_name)]
+                res = api._resources[resource_name]
+                log.logger.debug(res.actions)
+                #log.logger.debug(res.get_action_full_url(action))
+                #log.logger.debug(res.get_action(action))
                 func = getattr(res,action)
                 response = None
                 if body is not None:
@@ -161,7 +162,8 @@ class NeptuneClient():
             api.api_root_url = self.api_root_url + url_prefix
             api.add_resource(resource_name=resource_name)
             try:
-                res = api._resources[api.correct_attribute_name(resource_name)]
+                # res = api._resources[api.correct_attribute_name(resource_name)]
+                res = api._resources[resource_name]
                 func = getattr(res,action)
                 response = None
                 if body is not None:
@@ -189,7 +191,8 @@ class NeptuneClient():
             api.api_root_url = self.api_root_url + url_prefix
             api.add_resource(resource_name=resource_name, full_action_url=api.api_root_url + '/' + resource_name + '/' + idvalue)
             try:
-                res = api._resources[api.correct_attribute_name(resource_name)]
+                # res = api._resources[api.correct_attribute_name(resource_name)]
+                res = api._resources[resource_name]
                 func = getattr(res,action)
                 response = None
                 if body is not None:
@@ -216,7 +219,8 @@ class NeptuneClient():
             api.api_root_url = self.api_root_url + url_prefix
             api.add_resource(resource_name=resource_name, full_action_url=api.api_root_url + '/' + resource_name + '/' + idvalue)
             try:
-                res = api._resources[api.correct_attribute_name(resource_name)]
+                # res = api._resources[api.correct_attribute_name(resource_name)]
+                res = api._resources[resource_name]
                 # log.logger.debug(res.actions)
                 # log.logger.debug(res.get_action_full_url(action))
                 # log.logger.debug(res.get_action(action))
@@ -241,11 +245,12 @@ if __name__ == '__main__':
         nc.renew_token()
     if ( not nc.token_expired ) and ( nc.access_token is not None ):
         log.logger.debug(nc.fetchusers())
-        # nc.fetch('database','_schema')
+        ncdb = nc.fetch('database','_schema')
+        log.logger.debug(ncdb)
         ncmeta = nc.fetch('Brands', '_schema/_table')
         log.logger.debug(ncmeta)
-        #resultstr = nc.fetch('orders','_schema/_table')
-        #log.logger.debug(resultstr)
+        resultstr = nc.fetch('Customer_Ownership','_schema/_table')
+        log.logger.debug(resultstr)
         #resultstr = nc.fetch('orders', '_table', None, 10, 10, True)
         #log.logger.debug(resultstr)
         #resultstr = nc.deletebyid('employees', '_table', 'employeeNumber', '1002')
