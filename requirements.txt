@@ -13,4 +13,4 @@ PyJwt==2.3.0
 passlib==1.7.4
 pydantic==1.9.0
 python-multipart==0.0.5
-bcrypt-3.2.0
+bcrypt==3.2.0
