@@ -258,8 +258,8 @@ async def query_data(table_name: str, tablequerybody: apimodel.TableQueryBody,
             detail='Table [ %s ] not found' % table_name
         )
     dataservicemodel = importlib.import_module('services.'+table_name.strip().lower()+'service')
-    dataservice = getattr(dataservicemodel, table_name.strip().capitalize()+'Service')()
-    return getattr(dataservice, 'query_'+table_name.strip().capitalize())(tablequerybody.json())
+    dataservice = getattr(dataservicemodel, table_name.strip()+'Service')()
+    return getattr(dataservice, 'query_'+table_name.strip())(tablequerybody.json())
 
 @app.post(prefix+"/_table/{table_name}",
           tags=["Data - Table Level"],
@@ -287,8 +287,8 @@ async def post_data(table_name: str, tablepost: apimodel.TableBody,
             detail='Table [ %s ] not found' % table_name
         )
     dataservicemodel = importlib.import_module('services.' + table_name.strip().lower() + 'service')
-    dataservice = getattr(dataservicemodel, table_name.strip().capitalize() + 'Service')()
-    return getattr(dataservice, 'batch_create_' + table_name.strip().capitalize() + '_byjson')(tablepost.json())
+    dataservice = getattr(dataservicemodel, table_name.strip() + 'Service')()
+    return getattr(dataservice, 'batch_create_' + table_name.strip() + '_byjson')(tablepost.json())
 
 @app.put(prefix+"/_table/{table_name}",
          tags=["Data - Table Level"],
@@ -317,8 +317,8 @@ async def put_data(table_name: str, tableput: apimodel.TableBody,
             detail='Table [ %s ] not found' % table_name
         )
     dataservicemodel = importlib.import_module('services.' + table_name.strip().lower() + 'service')
-    dataservice = getattr(dataservicemodel, table_name.strip().capitalize() + 'Service')()
-    return getattr(dataservice, 'batch_update_' + table_name.strip().capitalize() + '_byjson')(tableput.json())
+    dataservice = getattr(dataservicemodel, table_name.strip() + 'Service')()
+    return getattr(dataservice, 'batch_update_' + table_name.strip() + '_byjson')(tableput.json())
 
 @app.delete(prefix+"/_table/{table_name}",
             tags=["Data - Table Level"],
@@ -342,8 +342,8 @@ async def delete_data(table_name: str,
             detail='Table [ %s ] not found' % table_name
         )
     dataservicemodel = importlib.import_module('services.' + table_name.strip().lower() + 'service')
-    dataservice = getattr(dataservicemodel, table_name.strip().capitalize() + 'Service')()
-    return getattr(dataservice, 'delete_' + table_name.strip().capitalize() + '_byid')(filterstr)
+    dataservice = getattr(dataservicemodel, table_name.strip() + 'Service')()
+    return getattr(dataservice, 'delete_' + table_name.strip() + '_byid')(filterstr)
 
 @app.get(prefix+"/_table/{table_name}/{id}",
          tags=["Data - Row Level"],
@@ -369,7 +369,7 @@ async def get_data_by_id(table_name: str, id: str,
             detail='Table [ %s ] not found' % table_name
         )
     dataservicemodel = importlib.import_module('services.' + table_name.strip().lower() + 'service')
-    dataservice = getattr(dataservicemodel, table_name.strip().capitalize() + 'Service')()
+    dataservice = getattr(dataservicemodel, table_name.strip() + 'Service')()
     idfldtuple = tuple(filter(None,idfield.replace(' ','').split(',')))
     idtuple = tuple(filter(None,id.replace(' ','').split('-')))
     idqrytuple = tuple(zip(idfldtuple,idtuple))
@@ -378,7 +378,7 @@ async def get_data_by_id(table_name: str, id: str,
         idstr = idstr + "==".join(idqry)+","
     idwherestr = "("+ ") & (".join(tuple(filter(None, idstr.replace(' ', '').split(',')))) + ")"
     log.logger.debug('get_data_by_id() querystr: [%s]' % idwherestr)
-    return getattr(dataservice, 'get_' + table_name.strip().capitalize() + '_byid')(idwherestr)
+    return getattr(dataservice, 'get_' + table_name.strip() + '_byid')(idwherestr)
 
 @app.post(prefix+"/_table/_querybyid/{table_name}",
           tags=["Data - Row Level"],
@@ -406,13 +406,13 @@ async def query_data_by_id(table_name: str, tablequerybyid: apimodel.RecordBody,
             detail='Table [ %s ] not found' % table_name
         )
     dataservicemodel = importlib.import_module('services.' + table_name.strip().lower() + 'service')
-    dataservice = getattr(dataservicemodel, table_name.strip().capitalize() + 'Service')()
+    dataservice = getattr(dataservicemodel, table_name.strip() + 'Service')()
     idstr = ''
     for key,value in tablequerybyid.data.items():
         idstr = idstr + key + "==" + str(value) + ","
     idwherestr = "("+ ") & (".join(tuple(filter(None, idstr.replace(' ', '').split(',')))) + ")"
     log.logger.debug('query_data_by_id() querystr: [%s]' % idwherestr)
-    return getattr(dataservice, 'get_' + table_name.strip().capitalize() + '_byid')(idwherestr)
+    return getattr(dataservice, 'get_' + table_name.strip() + '_byid')(idwherestr)
 
 @app.put(prefix+"/_table/{table_name}/{id}",
          tags=["Data - Row Level"],
@@ -444,7 +444,7 @@ async def put_data_by_id(table_name: str, id: str,
             detail='Table [ %s ] not found' % table_name
         )
     dataservicemodel = importlib.import_module('services.' + table_name.strip().lower() + 'service')
-    dataservice = getattr(dataservicemodel, table_name.strip().capitalize() + 'Service')()
+    dataservice = getattr(dataservicemodel, table_name.strip() + 'Service')()
     updateentity = tableputbyid.data
     idtuple = tuple(filter(None,id.replace(' ','').split('-')))
     idstrtuple = tuple(filter(None,tableputbyid.ids.replace(' ','').split(',')))
@@ -452,7 +452,7 @@ async def put_data_by_id(table_name: str, id: str,
     ikdv = dict((x, y) for x, y in idkvtuple)
     for key,value in ikdv.items():
         updateentity[key.strip(table_name+'.')] = value
-    return getattr(dataservice, 'update_' + table_name.strip().capitalize() + '_byjson')(updateentity)
+    return getattr(dataservice, 'update_' + table_name.strip() + '_byjson')(updateentity)
 
 @app.delete(prefix+"/_table/{table_name}/{id}",
             tags=["Data - Row Level"],
@@ -478,7 +478,7 @@ async def delete_data_by_id(table_name: str, id: str,
             detail='Table [ %s ] not found' % table_name
         )
     dataservicemodel = importlib.import_module('services.' + table_name.strip().lower() + 'service')
-    dataservice = getattr(dataservicemodel, table_name.strip().capitalize() + 'Service')()
+    dataservice = getattr(dataservicemodel, table_name.strip() + 'Service')()
     idfldtuple = tuple(filter(None, idfield.replace(' ', '').split(',')))
     idtuple = tuple(filter(None, id.replace(' ', '').split('-')))
     idqrytuple = tuple(zip(idfldtuple, idtuple))
@@ -487,7 +487,7 @@ async def delete_data_by_id(table_name: str, id: str,
         idstr = idstr + "==".join(idqry) + ","
     idwherestr = "("+ ") & (".join(tuple(filter(None, idstr.replace(' ', '').split(',')))) + ")"
     log.logger.debug('delete_data_by_id() querystr: [%s]' % idwherestr)
-    return getattr(dataservice, 'delete_' + table_name.strip().capitalize() + '_byid')(idwherestr)
+    return getattr(dataservice, 'delete_' + table_name.strip() + '_byid')(idwherestr)
 
 @app.get("/sys/config",
          tags=["System"],

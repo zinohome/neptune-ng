@@ -28,7 +28,7 @@ log = log.Logger(level=cfg['Application_Config'].app_log_level)
 '''meta'''
 meta = DBMeta()
 
-class {{ name | capitalize }}(SQLModel, table=True):
+class {{ name }}(SQLModel, table=True):
 {% for column in columns %}
     {% if column.nullable == 'True' %}
         {% if column.primary_key | int > 0 %}

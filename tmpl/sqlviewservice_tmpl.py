@@ -18,7 +18,7 @@ from sqlmodel import Session, select
 
 from core import dbengine
 from config import config
-from models.{{ name | lower }} import {{ name | capitalize }}
+from models.{{ name | lower }} import {{ name }}
 from util import log, toolkit
 
 from sqlmodel.sql.expression import Select, SelectOfScalar
@@ -31,12 +31,12 @@ cfg = config.app_config
 '''logging'''
 log = log.Logger(level=cfg['Application_Config'].app_log_level)
 
-class {{ name | capitalize }}Service(object):
+class {{ name }}Service(object):
     def __init__(self):
-        self._modelName = '{{ name | capitalize }}'
+        self._modelName = '{{ name }}'
 
     def new_model(self, modeljson):
-        newmodel = {{ name | capitalize }}()
+        newmodel = {{ name }}()
         for field in newmodel.__fields__.values():
             if field.name in modeljson:
                 newmodel.__setattr__(field.name, modeljson[field.name])
@@ -54,50 +54,50 @@ class {{ name | capitalize }}Service(object):
         return jsonlist
 
 
-    def getall_{{ name | capitalize }}(self):
+    def getall_{{ name }}(self):
         try:
             engine = dbengine.DBEngine().connect()
             with Session(engine) as session:
-                results = session.query({{ name | capitalize }}).limit(cfg['Query_Config'].query_limit_upset)
+                results = session.query({{ name }}).limit(cfg['Query_Config'].query_limit_upset)
                 return results.all()
         except Exception as e:
-            log.logger.error('Exception at getall_{{ name | capitalize }}(): %s ' % e)
+            log.logger.error('Exception at getall_{{ name }}(): %s ' % e)
             return None
         finally:
             session.close()
 
-    def get_{{ name | capitalize }}_count(self):
+    def get_{{ name }}_count(self):
         try:
             engine = dbengine.DBEngine().connect()
             with Session(engine) as session:
                 results = session.execute('select count(*) from {{ name }}')
                 return results.one()[0]
         except Exception as e:
-            log.logger.error('Exception at get_{{ name | capitalize }}_count(): %s ' % e)
+            log.logger.error('Exception at get_{{ name }}_count(): %s ' % e)
             return None
         finally:
             session.close()
 
-    def get_{{ name | capitalize }}_byid(self, idstr):
+    def get_{{ name }}_byid(self, idstr):
         try:
             engine = dbengine.DBEngine().connect()
             with Session(engine) as session:
-                statement = select({{ name | capitalize }}).where(eval(idstr))
+                statement = select({{ name }}).where(eval(idstr))
                 result = session.exec(statement).one()
-                #log.logger.debug('get_{{ name | capitalize }}_byid() result is : %s' % result)
+                #log.logger.debug('get_{{ name }}_byid() result is : %s' % result)
                 return result
         except Exception as e:
-            log.logger.error('Exception at get_{{ name | capitalize }}_byid(): %s ' % e)
+            log.logger.error('Exception at get_{{ name }}_byid(): %s ' % e)
             return None
         finally:
             session.close()
 
-    def query_{{ name | capitalize }}(self,querystr):
+    def query_{{ name }}(self,querystr):
         if toolkit.validQueryJson(querystr):
             queryjson = json.loads(querystr)
             log.logger.debug('The query JSON is: %s' % queryjson)
             #add querycolumns
-            fullqueryfields = "{{ name | capitalize }}." + ",{{ name | capitalize }}.".join(tuple({{ name | capitalize }}.__fields__.keys()))
+            fullqueryfields = "{{ name }}." + ",{{ name }}.".join(tuple({{ name }}.__fields__.keys()))
             queryfields = fullqueryfields
             querystr = queryjson['queryfields'] if 'queryfields' in queryjson else None
             if querystr is not None:
@@ -107,7 +107,7 @@ class {{ name | capitalize }}Service(object):
             if len(queryfields.split(',')) == 1:
                 statement = select(eval(queryfields))
             else:
-                statement = select(from_obj={{ name | capitalize }}, columns=eval(queryfields))
+                statement = select(from_obj={{ name }}, columns=eval(queryfields))
             #add distinct
             bdistinct = queryjson['distinct'] if 'distinct' in queryjson else None
             if bdistinct is not None and distutils.util.strtobool(str(bdistinct)):
@@ -147,8 +147,8 @@ class {{ name | capitalize }}Service(object):
                 with Session(engine) as session:
                     #get record count
                     if include_count | count_only:
-                        pks = {{ name | capitalize }}.getPrimaryKeys({{ name | capitalize }})
-                        qfields = "{{ name | capitalize }}." + ",{{ name | capitalize }}.".join(tuple(pks))
+                        pks = {{ name }}.getPrimaryKeys({{ name }})
+                        qfields = "{{ name }}." + ",{{ name }}.".join(tuple(pks))
                         if len(qfields.split(',')) == 1:
                             cstate = select([func.count(eval(qfields))])
                         else:
@@ -175,7 +175,7 @@ class {{ name | capitalize }}Service(object):
                             rawdata.append(row._data)
                             fields = row._fields
                             data.append(row._asdict())
-                        # log.logger.debug('query_{{ name | capitalize }}() result is : %s' % result)
+                        # log.logger.debug('query_{{ name }}() result is : %s' % result)
                         if include_count:
                             #returnjson = {"data": self.dump_model_list(result)}
                             returnjson["record_count"] = record_count
@@ -186,10 +186,10 @@ class {{ name | capitalize }}Service(object):
                             returnjson['fields'] = fields
                             returnjson['data'] = data
                             returnjson['rawdata'] = rawdata
-                    # log.logger.debug('query_{{ name | capitalize }}() returndict is : %s' % returndict)
+                    # log.logger.debug('query_{{ name }}() returndict is : %s' % returndict)
                     return returnjson
             except Exception as e:
-                log.logger.error('Exception at query_{{ name | capitalize }}(): %s ' % e)
+                log.logger.error('Exception at query_{{ name }}(): %s ' % e)
                 return None
             finally:
                 session.close()
