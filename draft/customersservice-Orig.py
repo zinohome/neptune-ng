@@ -169,7 +169,7 @@ class CustomersService(object):
         try:
             for bdata in batchdata:
                 updentity = self.update_Customers_byjson(bdata)
-                returnjson['data'].append(updentity.sortJson())
+                returnjson['data'].append(updentity)
             return returnjson
         except Exception as e:
             log.logger.error('Exception at batch_update_Customers_byjson(): %s ' % e)

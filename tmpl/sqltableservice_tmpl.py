@@ -169,7 +169,7 @@ class {{ name | capitalize }}Service(object):
         try:
             for bdata in batchdata:
                 updentity = self.update_{{ name | capitalize }}_byjson(bdata)
-                returnjson['data'].append(updentity.sortJson())
+                returnjson['data'].append(updentity)
             return returnjson
         except Exception as e:
             log.logger.error('Exception at batch_update_{{ name | capitalize }}_byjson(): %s ' % e)

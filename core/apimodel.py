@@ -31,24 +31,27 @@ class TableQueryBody(BaseModel):
         anystr_strip_whitespace = True
         optional_by_default = False
 
-class TablePostBody(BaseModel):
+class TableBody(BaseModel):
     data: List[Dict] = None
     class Config:
-        title = 'Table Post Model'
+        title = 'Table Model'
         anystr_strip_whitespace = True
         optional_by_default = False
 
-class TablePutBody(BaseModel):
-    data: List[Dict] = None
+class RecordBody(BaseModel):
+    data: Dict = None
     class Config:
-        title = 'Table Put Model'
+        title = 'Record Model'
         anystr_strip_whitespace = True
         optional_by_default = False
 
-class TableQueryByIdBody(BaseModel):
-    fieldlist: str = '*'
-    idfield: str = None
-    id: str = None
+class PutRecordBody(BaseModel):
+    data: Dict = None
+    ids: str = None
+    class Config:
+        title = 'Record Model'
+        anystr_strip_whitespace = True
+        optional_by_default = False
 
 class TablePutByIdBody(BaseModel):
     fieldvalue: str = None

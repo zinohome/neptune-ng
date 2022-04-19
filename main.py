@@ -16,7 +16,7 @@ import os
 import importlib
 from datetime import timedelta
 
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Header
 from fastapi.openapi.docs import get_swagger_ui_html
 import simplejson as json
 from fastapi.security import OAuth2PasswordRequestForm
@@ -74,8 +74,8 @@ async def startup_event():
         clear_meta_cache()
     if cfg['Application_Config'].app_load_metadat_on_load:
         meta = dbmeta.DBMeta()
-        meta.gen_models()
-        meta.gen_services()
+        #meta.gen_models()
+        #meta.gen_services()
 
 @app.on_event("shutdown")
 def shutdown_event():
@@ -263,10 +263,10 @@ async def query_data(table_name: str, tablequerybody: apimodel.TableQueryBody,
 
 @app.post(prefix+"/_table/{table_name}",
           tags=["Data - Table Level"],
-         summary="Create one record.",
+         summary="Create one or more records.",
          description="",
          )
-async def post_data(table_name: str, tablepost: apimodel.TablePostBody,
+async def post_data(table_name: str, tablepost: apimodel.TableBody,
                     current_user_role: bool = Depends(security.get_write_permission)):
     """
         Parameters
@@ -274,7 +274,7 @@ async def post_data(table_name: str, tablepost: apimodel.TablePostBody,
         - **request body: Required**
         ```
             {
-             "data": [{"name":"jack","phone":"55789"}],  -- **Required** - Json formated fieldname-fieldvalue pair. ex: '[{"name":"jack","phone":"55789"}]'
+             "data": [{"name":"jack","phone":"55789"}]  -- **Required** - Json formated fieldname-fieldvalue pair. ex: '[{"name":"jack","phone":"55789"}]'
              }
         ```
     """
@@ -296,7 +296,7 @@ async def post_data(table_name: str, tablepost: apimodel.TablePostBody,
          description="",
          deprecated=False
          )
-async def put_data(table_name: str, tableput: apimodel.TablePutBody,
+async def put_data(table_name: str, tableput: apimodel.TableBody,
                    current_user_role: bool = Depends(security.get_write_permission)):
     """
             Parameters
@@ -304,10 +304,10 @@ async def put_data(table_name: str, tableput: apimodel.TablePutBody,
             - **request body: Required**
             ```
                 {
-                 "data": [{"name":"jack","phone":"55789"}],  -- **Required** - Json formated fieldname-fieldvalue pair. ex: '[{"name":"jack","phone":"55789"}]'
+                 "data": [{"name":"jack","phone":"55789"}]  -- **Required** - Json formated fieldname-fieldvalue pair. ex: '[{"name":"jack","phone":"55789"}]'
                  }
             ```
-        """
+    """
     log.logger.debug(
         'Access \'/_table/{table_name}\' : run in put_data(), input data table_name: [%s]' % table_name)
     log.logger.debug('body: [%s]' % tableput.json())
@@ -320,10 +320,128 @@ async def put_data(table_name: str, tableput: apimodel.TablePutBody,
     dataservice = getattr(dataservicemodel, table_name.strip().capitalize() + 'Service')()
     return getattr(dataservice, 'batch_update_' + table_name.strip().capitalize() + '_byjson')(tableput.json())
 
+@app.delete(prefix+"/_table/{table_name}",
+            tags=["Data - Table Level"],
+            summary="Delete one or more records.",
+            description="",
+            )
+async def delete_data(table_name: str,
+                      filterstr: str = Header(None),
+                      current_user_role: bool = Depends(security.get_write_permission)):
+    """
+        Parameters
+        - **table_name** (path): **Required** - Name of the table to perform operations on.
+        - **filterstr** (header): Optional - SQL-like filter string to limit the records to retrieve. ex: '(Customers.customer_id == 123) | (Customers.customer_id==234)'
+    """
+    log.logger.debug(
+        'Access \'/_table/{table_name}\' : run in delete_data(), input data table_name: [%s]' % table_name)
+    log.logger.debug('filter: [%s]' % filterstr)
+    if not dbmeta.DBMeta().check_table_schema(table_name):
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail='Table [ %s ] not found' % table_name
+        )
+    dataservicemodel = importlib.import_module('services.' + table_name.strip().lower() + 'service')
+    dataservice = getattr(dataservicemodel, table_name.strip().capitalize() + 'Service')()
+    return getattr(dataservice, 'delete_' + table_name.strip().capitalize() + '_byid')(filterstr)
 
+@app.get(prefix+"/_table/{table_name}/{id}",
+         tags=["Data - Row Level"],
+         summary="Retrieve one record by identifier.",
+         description="",
+         )
+async def get_data_by_id(table_name: str, id: str,
+                         idfield: str = Header(None),
+                         current_user: security.User = Depends(security.get_current_active_user)):
+    """
+        Parameters
+        - **table_name** (path): **Required** - Name of the table to perform operations on.
+        - **id** (path): **Required** - The id value of identifier ex:10 , for mutiple ids, use ex: 10-20-……
+        - **idfield** (header): Optional - Comma-delimited list of the fields used as identifiers. ex: 'Customers.id,Customers.id2'
+    """
+    log.logger.debug(
+        'Access \'/_table/{table_name}/{id}\' : run in get_data_by_id(), input data table_name: [%s]' % table_name)
+    log.logger.debug('idfield: [%s]' % idfield)
+    log.logger.debug('id: [%s]' % id)
+    if not dbmeta.DBMeta().check_table_schema(table_name):
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail='Table [ %s ] not found' % table_name
+        )
+    dataservicemodel = importlib.import_module('services.' + table_name.strip().lower() + 'service')
+    dataservice = getattr(dataservicemodel, table_name.strip().capitalize() + 'Service')()
+    idfldtuple = tuple(filter(None,idfield.replace(' ','').split(',')))
+    idtuple = tuple(filter(None,id.replace(' ','').split('-')))
+    idqrytuple = tuple(zip(idfldtuple,idtuple))
+    idstr = ''
+    for idqry in idqrytuple:
+        idstr = idstr + "==".join(idqry)+","
+    idwherestr = " & ".join(tuple(filter(None,idstr.replace(' ','').split(','))))
+    log.logger.debug('get_data_by_id() querystr: [%s]' % idwherestr)
+    return getattr(dataservice, 'get_' + table_name.strip().capitalize() + '_byid')(idwherestr)
 
+@app.post(prefix+"/_table/_querybyid/{table_name}",
+          tags=["Data - Row Level"],
+          summary="Retrieve one record by identifier.",
+          description="",
+          )
+async def query_data_by_id(table_name: str, tablequerybyid: apimodel.RecordBody,
+                           current_user: security.User = Depends(security.get_current_active_user)):
+    """
+            Parameters
+            - **table_name** (path): **Required** - Name of the table to perform operations on.
+            - **request body: Required**
+            ```
+                {
+                 "data": {string}  -- **Required** - Json formated fieldname-fieldvalue pair. ex: '{"Customers.customer_id":10,"Customers.ex_key_id":111}'
+                 }
+            ```
+    """
+    log.logger.debug(
+        'Access \'/_table/{table_name}/querybyid\' : run in query_data_by_id(), input data table_name: [%s]' % table_name)
+    log.logger.debug('body: [%s]' % tablequerybyid)
+    if not dbmeta.DBMeta().check_table_schema(table_name):
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail='Table [ %s ] not found' % table_name
+        )
+    dataservicemodel = importlib.import_module('services.' + table_name.strip().lower() + 'service')
+    dataservice = getattr(dataservicemodel, table_name.strip().capitalize() + 'Service')()
+    idstr = ''
+    for key,value in tablequerybyid.data.items():
+        idstr = idstr + key + "==" + str(value) + ","
+    idwherestr = " & ".join(tuple(filter(None, idstr.replace(' ', '').split(','))))
+    log.logger.debug('query_data_by_id() querystr: [%s]' % idwherestr)
+    return getattr(dataservice, 'get_' + table_name.strip().capitalize() + '_byid')(idwherestr)
 
-
+@app.put(prefix+"/_table/{table_name}/{id}",
+         tags=["Data - Row Level"],
+         summary="Replace the content of one record by identifier.",
+         description="",
+         )
+async def put_data_by_id(table_name: str, id: str,
+                         tableputbyid: apimodel.PutRecordBody,
+                         current_user_role: bool = Depends(security.get_write_permission)):
+    """
+            Parameters
+            - **table_name** (path): **Required** - Name of the table to perform operations on.
+            - **id** (path): **Required** - The id value of identifier ex:10 , for mutiple ids, use ex: 10-20-……
+            - **request body: Required**
+            ```
+                {
+                 "data": {"name":"jack","phone":"55789"},  -- **Required** - Json formated fieldname-fieldvalue pair. ex: '{"name":"jack","phone":"55789"}'
+                 "ids": {string}  -- **Required** - Json formated fieldname-fieldvalue pair. ex: '"Customers.customer_id,Customers.ex_key_id"'
+                 }
+            ```
+        """
+    log.logger.debug(
+        'Access \'/_table/{table_name}/{id}\' : run in put_data_by_id(), input data table_name: [%s]' % table_name)
+    log.logger.debug('body: [%s]' % tableputbyid)
+    if not dbmeta.DBMeta().check_table_schema(table_name):
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail='Table [ %s ] not found' % table_name
+        )
 
 
 
