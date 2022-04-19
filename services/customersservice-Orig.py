@@ -171,8 +171,9 @@ class CustomersService(object):
             #add querycolumns
             fullqueryfields = "Customers." + ",Customers.".join(tuple(Customers.__fields__.keys()))
             queryfields = fullqueryfields
-            if "queryfields" in queryjson:
-                queryfields = queryjson['queryfields'].replace(' ','')
+            querystr = queryjson['queryfields'] if 'queryfields' in queryjson else None
+            if querystr is not None:
+                queryfields = querystr.replace(' ','')
                 if "*" in queryfields:
                     queryfields=fullqueryfields
             if len(queryfields.split(',')) == 1:
@@ -180,40 +181,41 @@ class CustomersService(object):
             else:
                 statement = select(from_obj=Customers, columns=eval(queryfields))
             #add distinct
-            if "distinct" in queryjson:
-                if distutils.util.strtobool(queryjson['distinct'].replace(' ','')):
-                    statement = statement.distinct()
+            bdistinct = queryjson['distinct'] if 'distinct' in queryjson else None
+            if bdistinct is not None and distutils.util.strtobool(str(bdistinct)):
+                statement = statement.distinct()
             # add where
             wherefields = queryjson['where'] if 'where' in queryjson else None
             if wherefields is not None:
                 statement = statement.where(eval(wherefields))
-            #add ordercolumns
-            if "order_by" in queryjson:
-                orderfields = queryjson['order_by']
+            #add order_by
+            orderfields = queryjson['order_by'] if 'order_by' in queryjson else None
+            if orderfields is not None:
                 orderfieldslist = tuple(filter(None,orderfields.replace(' ','').split(',')))
                 for order in orderfieldslist:
                     statement = statement.order_by(eval(order))
             #add group_by
             #add limit & offset
-            if "limit" in queryjson:
-                statement = statement.limit(queryjson['limit'])
-            if "offset" in queryjson:
-                statement = statement.offset(queryjson['offset'])
+            dlimit = queryjson['limit'] if 'limit' in queryjson else None
+            if dlimit is not None:
+                statement = statement.limit(dlimit)
+            doffset = queryjson['offset'] if 'offset' in queryjson else None
+            if doffset is not None:
+                statement = statement.offset(doffset)
             log.logger.debug("The query Statement is: %s" % statement)
             include_count = False
             count_only = False
             record_count = 0
             # add include_count
-            if "include_count" in queryjson:
-                if distutils.util.strtobool(queryjson['include_count'].replace(' ', '')):
-                    include_count = True
+            binclude_count = queryjson['include_count'] if 'include_count' in queryjson else None
+            if binclude_count is not None and distutils.util.strtobool(str(binclude_count)):
+                include_count = True
             # add count_only
-            if "count_only" in queryjson:
-                if distutils.util.strtobool(queryjson['count_only'].replace(' ', '')):
-                    count_only = True
+            bcount_only = queryjson['count_only'] if 'count_only' in queryjson else None
+            if bcount_only is not None and distutils.util.strtobool(str(bcount_only)):
+                count_only = True
             try:
                 engine = dbengine.DBEngine().connect()
-
                 with Session(engine) as session:
                     #get record count
                     if include_count | count_only:
@@ -225,12 +227,12 @@ class CustomersService(object):
                             cstate = select([func.count(eval(qfields.split(',')[0]))])
                         # add distinct
                         if "distinct" in queryjson:
-                            if distutils.util.strtobool(queryjson['distinct'].replace(' ', '')):
+                            if bdistinct is not None and distutils.util.strtobool(str(bdistinct)):
                                 cstate = cstate.distinct()
                         # add where
-                        if "where" in queryjson:
-                            wherefields = queryjson['where']
+                        if wherefields is not None:
                             cstate = cstate.where(eval(wherefields))
+                        log.logger.debug("The record count query Statement is: %s" % cstate)
                         record_count = session.exec(cstate).one()
                         #log.logger.debug("RecordCount is: %s" % record_count)
                     returnjson = {}
@@ -304,7 +306,7 @@ if __name__ == '__main__':
     log.logger.error('====================== query_Customers() ======================')
     querystr = '{' \
                    '"queryfields":"Customers.first_name,Customers.last_name,Customers.customer_id",' \
-                   '"distinct":"True",' \
+                   '"distinct":"False",' \
                    '"where":"((Customers.first_name != \'Jun\') | (Customers.household_income > 80001)) & (Customers.last_name != \'Zhang\')",' \
                    '"order_by":"Customers.phone_number.asc(), Customers.household_income.asc()",' \
                    '"group_by":"Customers.last_name",' \

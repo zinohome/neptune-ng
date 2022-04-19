@@ -17,31 +17,19 @@ from config import config
 
 
 class TableQueryBody(BaseModel):
-    '''
-    querystr: str = '{' \
-                   '"queryfields":"Customers.first_name,Customers.last_name,Customers.customer_id",' \
-                   '"distinct":"True",' \
-                   '"where":"((Customers.first_name != \'Jun\') | (Customers.household_income > 80001)) & (Customers.last_name != \'Zhang\')",' \
-                   '"order_by":"Customers.phone_number.asc(), Customers.household_income.asc()",' \
-                   '"group_by":"Customers.last_name",' \
-                   '"limit":2,' \
-                   '"offset":2,' \
-                   '"include_count":"True",' \
-                   '"count_only":"False"' \
-                   '}'
-    '''
     queryfields: Optional[str] = None # eg. "Customers.first_name,Customers.last_name,Customers.customer_id"
-    distinct: Optional[str] = None
+    distinct: Optional[bool] = None
     where: Optional[str] = None
     order_by: Optional[str] = None
     group_by: Optional[str] = None
     limit: Optional[int] = None
     offset: Optional[int] = None
-    include_count: Optional[str] = None
-    count_only: Optional[str] = None
+    include_count: Optional[bool] = None
+    count_only: Optional[bool] = None
 
     class Config:
-        require_by_default = False
+        title = 'Table Query Model'
+        anystr_strip_whitespace = True
         optional_by_default = False
 
 class TableQueryByIdBody(BaseModel):

@@ -249,7 +249,7 @@ async def query_data(table_name: str, tablequerybody: apimodel.TableQueryBody,
         """
     log.logger.debug(
         'Access \'/_table/_query{table_name}/\' : run in query_data(), input data table_name: [%s]' % table_name)
-    log.logger.debug('body: [%s]' % tablequerybody.dict())
+    log.logger.debug('body: [%s]' % tablequerybody.json())
     if not dbmeta.DBMeta().check_table_schema(table_name):
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
@@ -257,11 +257,11 @@ async def query_data(table_name: str, tablequerybody: apimodel.TableQueryBody,
         )
     dataservicemodel = importlib.import_module('services.'+table_name.strip().lower()+'service')
     dataservice = getattr(dataservicemodel, table_name.strip().capitalize()+'Service')()
-    return getattr(dataservice, 'query_'+table_name.strip().capitalize())(json.dumps(tablequerybody.dict()))
+    return getattr(dataservice, 'query_'+table_name.strip().capitalize())(tablequerybody.json())
 
 @app.post(prefix+"/_table/{table_name}",
           tags=["Data - Table Level"],
-         summary="Create one or more records.",
+         summary="Create one record.",
          description="",
          )
 async def post_data(table_name: str, tablepost: apimodel.TablePostBody,
