@@ -11,10 +11,13 @@
 
 
 from pydantic import BaseModel
+from pydantic.class_validators import Optional
+
 from config import config
 
 
 class TableQueryBody(BaseModel):
+    '''
     querystr: str = '{' \
                    '"queryfields":"Customers.first_name,Customers.last_name,Customers.customer_id",' \
                    '"distinct":"True",' \
@@ -26,7 +29,20 @@ class TableQueryBody(BaseModel):
                    '"include_count":"True",' \
                    '"count_only":"False"' \
                    '}'
+    '''
+    queryfields: Optional[str] = None # eg. "Customers.first_name,Customers.last_name,Customers.customer_id"
+    distinct: Optional[str] = None
+    where: Optional[str] = None
+    order_by: Optional[str] = None
+    group_by: Optional[str] = None
+    limit: Optional[int] = None
+    offset: Optional[int] = None
+    include_count: Optional[str] = None
+    count_only: Optional[str] = None
 
+    class Config:
+        require_by_default = False
+        optional_by_default = False
 
 class TableQueryByIdBody(BaseModel):
     fieldlist: str = '*'

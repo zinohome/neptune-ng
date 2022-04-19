@@ -184,8 +184,8 @@ class CustomersService(object):
                 if distutils.util.strtobool(queryjson['distinct'].replace(' ','')):
                     statement = statement.distinct()
             #add where
-            if "where" in queryjson:
-                wherefields = queryjson['where']
+            wherefields = queryjson['where'] if 'where' in queryjson else None
+            if wherefields is not None:
                 statement = statement.where(eval(wherefields))
             #add ordercolumns
             if "order_by" in queryjson:

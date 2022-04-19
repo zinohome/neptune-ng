@@ -18,6 +18,7 @@ from datetime import timedelta
 
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.openapi.docs import get_swagger_ui_html
+import simplejson as json
 from fastapi.security import OAuth2PasswordRequestForm
 from starlette import status
 from starlette.middleware.cors import CORSMiddleware
@@ -248,7 +249,7 @@ async def query_data(table_name: str, tablequerybody: apimodel.TableQueryBody,
         """
     log.logger.debug(
         'Access \'/_table/_query{table_name}/\' : run in query_data(), input data table_name: [%s]' % table_name)
-    log.logger.debug('body: [%s]' % tablequerybody)
+    log.logger.debug('body: [%s]' % tablequerybody.dict())
     if not dbmeta.DBMeta().check_table_schema(table_name):
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
@@ -256,7 +257,7 @@ async def query_data(table_name: str, tablequerybody: apimodel.TableQueryBody,
         )
     dataservicemodel = importlib.import_module('services.'+table_name.strip().lower()+'service')
     dataservice = getattr(dataservicemodel, table_name.strip().capitalize()+'Service')()
-    return getattr(dataservice, 'query_'+table_name.strip().capitalize())(tablequerybody.querystr)
+    return getattr(dataservice, 'query_'+table_name.strip().capitalize())(json.dumps(tablequerybody.dict()))
 
 @app.post(prefix+"/_table/{table_name}",
           tags=["Data - Table Level"],
