@@ -74,6 +74,8 @@ async def startup_event():
         clear_meta_cache()
     if cfg['Application_Config'].app_load_metadat_on_load:
         meta = dbmeta.DBMeta()
+        meta.gen_models()
+        meta.gen_services()
 
 @app.on_event("shutdown")
 def shutdown_event():
@@ -266,11 +268,57 @@ async def query_data(table_name: str, tablequerybody: apimodel.TableQueryBody,
          )
 async def post_data(table_name: str, tablepost: apimodel.TablePostBody,
                     current_user_role: bool = Depends(security.get_write_permission)):
-    pass
+    """
+        Parameters
+        - **table_name** (path): **Required** - Name of the table to perform operations on.
+        - **request body: Required**
+        ```
+            {
+             "data": [{"name":"jack","phone":"55789"}],  -- **Required** - Json formated fieldname-fieldvalue pair. ex: '[{"name":"jack","phone":"55789"}]'
+             }
+        ```
+    """
+    log.logger.debug(
+        'Access \'/_table/{table_name}\' : run in post_data(), input data table_name: [%s]' % table_name)
+    log.logger.debug('body data: [%s]' % tablepost.json())
+    if not dbmeta.DBMeta().check_table_schema(table_name):
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail='Table [ %s ] not found' % table_name
+        )
+    dataservicemodel = importlib.import_module('services.' + table_name.strip().lower() + 'service')
+    dataservice = getattr(dataservicemodel, table_name.strip().capitalize() + 'Service')()
+    return getattr(dataservice, 'batch_create_' + table_name.strip().capitalize() + '_byjson')(tablepost.json())
 
-
-
-
+@app.put(prefix+"/_table/{table_name}",
+         tags=["Data - Table Level"],
+         summary="Update (replace) one or more records.",
+         description="",
+         deprecated=False
+         )
+async def put_data(table_name: str, tableput: apimodel.TablePutBody,
+                   current_user_role: bool = Depends(security.get_write_permission)):
+    """
+            Parameters
+            - **table_name** (path): **Required** - Name of the table to perform operations on.
+            - **request body: Required**
+            ```
+                {
+                 "data": [{"name":"jack","phone":"55789"}],  -- **Required** - Json formated fieldname-fieldvalue pair. ex: '[{"name":"jack","phone":"55789"}]'
+                 }
+            ```
+        """
+    log.logger.debug(
+        'Access \'/_table/{table_name}\' : run in put_data(), input data table_name: [%s]' % table_name)
+    log.logger.debug('body: [%s]' % tableput.json())
+    if not dbmeta.DBMeta().check_table_schema(table_name):
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail='Table [ %s ] not found' % table_name
+        )
+    dataservicemodel = importlib.import_module('services.' + table_name.strip().lower() + 'service')
+    dataservice = getattr(dataservicemodel, table_name.strip().capitalize() + 'Service')()
+    return getattr(dataservice, 'batch_update_' + table_name.strip().capitalize() + '_byjson')(tableput.json())
 
 
 

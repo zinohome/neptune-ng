@@ -89,12 +89,27 @@ class CustomersService(object):
                 returnjson = {}
                 for pk in pks:
                     returnjson[pk] = customer.__getattribute__(pk)
-                return json.dumps(returnjson)
+                return returnjson
         except Exception as e:
             log.logger.error('Exception at create_Customers(): %s ' % e)
             return None
         finally:
             session.close()
+
+    def batch_create_Customers_byjson(self, jsonstr):
+        batchjson = json.loads(jsonstr)
+        batchdata = batchjson['data'] if 'data' in batchjson else None
+        returnjson = {"ids":[],"data":[]}
+        try:
+            for bdata in batchdata:
+                newentity = self.new_model(bdata)
+                newid = self.create_Customers(newentity)
+                returnjson['ids'].append(newid)
+                returnjson['data'].append(newentity)
+            return returnjson
+        except Exception as e:
+            log.logger.error('Exception at batch_create_Customers(): %s ' % e)
+            return None
 
     def get_Customers_byid(self, idstr):
         try:
@@ -124,8 +139,7 @@ class CustomersService(object):
         finally:
             session.close()
 
-    def update_Customers_byjson(self, updatejsonstr):
-        updatejson = json.loads(updatejsonstr)
+    def update_Customers_byjson(self, updatejson):
         log.logger.debug('The update JSON is: %s' % updatejson)
         pks = Customers.getPrimaryKeys(Customers)
         statement = select(Customers)
@@ -147,6 +161,19 @@ class CustomersService(object):
             return None
         finally:
             session.close()
+
+    def batch_update_Customers_byjson(self, jsonstr):
+        batchjson = json.loads(jsonstr)
+        batchdata = batchjson['data'] if 'data' in batchjson else None
+        returnjson = {"data": []}
+        try:
+            for bdata in batchdata:
+                updentity = self.update_Customers_byjson(bdata)
+                returnjson['data'].append(updentity.sortJson())
+            return returnjson
+        except Exception as e:
+            log.logger.error('Exception at batch_update_Customers_byjson(): %s ' % e)
+            return None
 
     def delete_Customers_byid(self, idstr):
         try:
@@ -290,7 +317,7 @@ if __name__ == '__main__':
     log.logger.info('The New Customer is : %s' % custome_zhangjun)
     log.logger.info('The New Customer JSON is : %s' % custome_zhangjun.sortJson())
     log.logger.error('====================== get_Customers_byid() ======================')
-    customer_mod = cs.get_Customers_byid("Customers.customer_id=="+str(json.loads(newid)['customer_id']))
+    customer_mod = cs.get_Customers_byid("Customers.customer_id=="+str(newid['customer_id']))
     log.logger.info('The Customer get by id is : %s' % customer_mod)
     log.logger.info('The Customer get by id JSON is : %s' % customer_mod.sortJson())
     log.logger.error('====================== update_Customers() ======================')
@@ -301,7 +328,7 @@ if __name__ == '__main__':
     log.logger.error('====================== update_Customers_byjson() ======================')
     updatejsonstr = '{"birthdate": "1979-11-26", "customer_id": 630, "email": "zhangjunqd@gmail.com", "first_name": "Jun", "gender": "Male", "household_income": 120000, "last_name": "Zhang", "phone_number": 17895329550}'
     log.logger.info("The before mod customer is :%s" % updatejsonstr)
-    customer_moded = cs.update_Customers_byjson(updatejsonstr)
+    customer_moded = cs.update_Customers_byjson(json.loads(updatejsonstr))
     log.logger.info("The moded customer is :%s" % customer_moded)
     log.logger.error('====================== query_Customers() ======================')
     querystr = '{' \
@@ -319,5 +346,5 @@ if __name__ == '__main__':
     log.logger.info("The customer query result is :%s" % customer_result)
     log.logger.error('====================== delete_Customers_byid() ======================')
     log.logger.info('The delete Customer ID is : %s' % newid)
-    cs.delete_Customers_byid("Customers.customer_id=="+str(json.loads(newid)['customer_id']))
+    cs.delete_Customers_byid("Customers.customer_id == "+str(newid['customer_id']))
     log.logger.info('The Customer get by id is : %s' % cs.get_Customers_byid(newid))

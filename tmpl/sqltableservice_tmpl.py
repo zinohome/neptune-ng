@@ -89,12 +89,27 @@ class {{ name | capitalize }}Service(object):
                 returnjson = {}
                 for pk in pks:
                     returnjson[pk] = customer.__getattribute__(pk)
-                return json.dumps(returnjson)
+                return returnjson
         except Exception as e:
             log.logger.error('Exception at create_{{ name | capitalize }}(): %s ' % e)
             return None
         finally:
             session.close()
+
+    def batch_create_{{ name | capitalize }}_byjson(self, jsonstr):
+        batchjson = json.loads(jsonstr)
+        batchdata = batchjson['data'] if 'data' in batchjson else None
+        returnjson = {"ids": [], "data": []}
+        try:
+            for bdata in batchdata:
+                newentity = self.new_model(bdata)
+                newid = self.create_{{ name | capitalize }}(newentity)
+                returnjson['ids'].append(newid)
+                returnjson['data'].append(newentity)
+            return returnjson
+        except Exception as e:
+            log.logger.error('Exception at batch_create_{{ name | capitalize }}(): %s ' % e)
+            return None
 
     def get_{{ name | capitalize }}_byid(self, idstr):
         try:
@@ -124,8 +139,7 @@ class {{ name | capitalize }}Service(object):
         finally:
             session.close()
 
-    def update_{{ name | capitalize }}_byjson(self, updatejsonstr):
-        updatejson = json.loads(updatejsonstr)
+    def update_{{ name | capitalize }}_byjson(self, updatejson):
         log.logger.debug('The update JSON is: %s' % updatejson)
         pks = {{ name | capitalize }}.getPrimaryKeys({{ name | capitalize }})
         statement = select({{ name | capitalize }})
@@ -147,6 +161,19 @@ class {{ name | capitalize }}Service(object):
             return None
         finally:
             session.close()
+
+    def batch_update_{{ name | capitalize }}_byjson(self, jsonstr):
+        batchjson = json.loads(jsonstr)
+        batchdata = batchjson['data'] if 'data' in batchjson else None
+        returnjson = {"data": []}
+        try:
+            for bdata in batchdata:
+                updentity = self.update_{{ name | capitalize }}_byjson(bdata)
+                returnjson['data'].append(updentity.sortJson())
+            return returnjson
+        except Exception as e:
+            log.logger.error('Exception at batch_update_{{ name | capitalize }}_byjson(): %s ' % e)
+            return None
 
     def delete_{{ name | capitalize }}_byid(self, idstr):
         try:

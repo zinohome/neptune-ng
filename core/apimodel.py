@@ -12,12 +12,12 @@
 
 from pydantic import BaseModel
 from pydantic.class_validators import Optional
+from pydantic.types import Json, List, Dict
 
 from config import config
 
-
 class TableQueryBody(BaseModel):
-    queryfields: Optional[str] = None # eg. "Customers.first_name,Customers.last_name,Customers.customer_id"
+    queryfields: Optional[str] = None  # eg. "Customers.first_name,Customers.last_name,Customers.customer_id"
     distinct: Optional[bool] = None
     where: Optional[str] = None
     order_by: Optional[str] = None
@@ -26,9 +26,22 @@ class TableQueryBody(BaseModel):
     offset: Optional[int] = None
     include_count: Optional[bool] = None
     count_only: Optional[bool] = None
-
     class Config:
         title = 'Table Query Model'
+        anystr_strip_whitespace = True
+        optional_by_default = False
+
+class TablePostBody(BaseModel):
+    data: List[Dict] = None
+    class Config:
+        title = 'Table Post Model'
+        anystr_strip_whitespace = True
+        optional_by_default = False
+
+class TablePutBody(BaseModel):
+    data: List[Dict] = None
+    class Config:
+        title = 'Table Put Model'
         anystr_strip_whitespace = True
         optional_by_default = False
 
@@ -37,22 +50,9 @@ class TableQueryByIdBody(BaseModel):
     idfield: str = None
     id: str = None
 
-
-class TablePostBody(BaseModel):
-    fieldvalue: str = None
-    idfield: str = None
-
-
 class TablePutByIdBody(BaseModel):
     fieldvalue: str = None
     idfield: str = None
-
-
-class TablePutBody(BaseModel):
-    filter: str = None
-    filterparam: str = None
-    fieldvalue: str = None
-
 
 class UserFuncPostBody(BaseModel):
     sqlparam: str = None
