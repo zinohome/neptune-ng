@@ -49,7 +49,7 @@ class PutRecordBody(BaseModel):
     data: Dict = None
     ids: str = None
     class Config:
-        title = 'Record Model'
+        title = 'Put Record Model'
         anystr_strip_whitespace = True
         optional_by_default = False
 

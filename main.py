@@ -28,7 +28,7 @@ from starlette.status import HTTP_401_UNAUTHORIZED, HTTP_404_NOT_FOUND
 
 from auth import users
 from config import config
-from core import dbmeta, security, apimodel
+from core import dbmeta, security, apimodel, dbengine
 
 from util import toolkit, log
 from fastapi.openapi.docs import (
@@ -357,7 +357,7 @@ async def get_data_by_id(table_name: str, id: str,
         Parameters
         - **table_name** (path): **Required** - Name of the table to perform operations on.
         - **id** (path): **Required** - The id value of identifier ex:10 , for mutiple ids, use ex: 10-20-……
-        - **idfield** (header): Optional - Comma-delimited list of the fields used as identifiers. ex: 'Customers.id,Customers.id2'
+        - **idfield** (header): - Comma-delimited list of the fields used as identifiers. ex: 'Customers.id,Customers.id2'
     """
     log.logger.debug(
         'Access \'/_table/{table_name}/{id}\' : run in get_data_by_id(), input data table_name: [%s]' % table_name)
@@ -376,7 +376,7 @@ async def get_data_by_id(table_name: str, id: str,
     idstr = ''
     for idqry in idqrytuple:
         idstr = idstr + "==".join(idqry)+","
-    idwherestr = " & ".join(tuple(filter(None,idstr.replace(' ','').split(','))))
+    idwherestr = "("+ ") & (".join(tuple(filter(None, idstr.replace(' ', '').split(',')))) + ")"
     log.logger.debug('get_data_by_id() querystr: [%s]' % idwherestr)
     return getattr(dataservice, 'get_' + table_name.strip().capitalize() + '_byid')(idwherestr)
 
@@ -410,7 +410,7 @@ async def query_data_by_id(table_name: str, tablequerybyid: apimodel.RecordBody,
     idstr = ''
     for key,value in tablequerybyid.data.items():
         idstr = idstr + key + "==" + str(value) + ","
-    idwherestr = " & ".join(tuple(filter(None, idstr.replace(' ', '').split(','))))
+    idwherestr = "("+ ") & (".join(tuple(filter(None, idstr.replace(' ', '').split(',')))) + ")"
     log.logger.debug('query_data_by_id() querystr: [%s]' % idwherestr)
     return getattr(dataservice, 'get_' + table_name.strip().capitalize() + '_byid')(idwherestr)
 
@@ -437,14 +437,133 @@ async def put_data_by_id(table_name: str, id: str,
     log.logger.debug(
         'Access \'/_table/{table_name}/{id}\' : run in put_data_by_id(), input data table_name: [%s]' % table_name)
     log.logger.debug('body: [%s]' % tableputbyid)
+    log.logger.debug('id: [%s]' % id)
     if not dbmeta.DBMeta().check_table_schema(table_name):
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
             detail='Table [ %s ] not found' % table_name
         )
+    dataservicemodel = importlib.import_module('services.' + table_name.strip().lower() + 'service')
+    dataservice = getattr(dataservicemodel, table_name.strip().capitalize() + 'Service')()
+    updateentity = tableputbyid.data
+    idtuple = tuple(filter(None,id.replace(' ','').split('-')))
+    idstrtuple = tuple(filter(None,tableputbyid.ids.replace(' ','').split(',')))
+    idkvtuple = tuple(zip(idstrtuple,idtuple))
+    ikdv = dict((x, y) for x, y in idkvtuple)
+    for key,value in ikdv.items():
+        updateentity[key.strip(table_name+'.')] = value
+    return getattr(dataservice, 'update_' + table_name.strip().capitalize() + '_byjson')(updateentity)
 
+@app.delete(prefix+"/_table/{table_name}/{id}",
+            tags=["Data - Row Level"],
+            summary="Delete one record by identifier.",
+            description="",
+            )
+async def delete_data_by_id(table_name: str, id: str,
+                            idfield: str = Header(None, max_length=200),
+                            current_user_role: bool = Depends(security.get_write_permission)):
+    """
+        Parameters
+        - **table_name** (path): **Required** - Name of the table to perform operations on.
+        - **id** (path): **Required** - The id value of identifier ex:10 , for mutiple ids, use ex: 10-20-……
+        - **idfield** (header): - Comma-delimited list of the fields used as identifiers. ex: 'Customers.id,Customers.id2'
+    """
+    log.logger.debug(
+        'Access \'/_table/{table_name}/{id}\' : run in delete_data_by_id(), input data table_name: [%s]' % table_name)
+    log.logger.debug('id: [%s]' % id)
+    log.logger.debug('idfield: [%s]' % idfield)
+    if not dbmeta.DBMeta().check_table_schema(table_name):
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail='Table [ %s ] not found' % table_name
+        )
+    dataservicemodel = importlib.import_module('services.' + table_name.strip().lower() + 'service')
+    dataservice = getattr(dataservicemodel, table_name.strip().capitalize() + 'Service')()
+    idfldtuple = tuple(filter(None, idfield.replace(' ', '').split(',')))
+    idtuple = tuple(filter(None, id.replace(' ', '').split('-')))
+    idqrytuple = tuple(zip(idfldtuple, idtuple))
+    idstr = ''
+    for idqry in idqrytuple:
+        idstr = idstr + "==".join(idqry) + ","
+    idwherestr = "("+ ") & (".join(tuple(filter(None, idstr.replace(' ', '').split(',')))) + ")"
+    log.logger.debug('delete_data_by_id() querystr: [%s]' % idwherestr)
+    return getattr(dataservice, 'delete_' + table_name.strip().capitalize() + '_byid')(idwherestr)
 
+@app.get("/sys/config",
+         tags=["System"],
+         summary="Show the system configuration.",
+         description="",
+         )
+async def sys_config(SecuretKey: str = Header(..., min_length=5),
+                      current_user_role: bool = Depends(security.get_super_permission)):
+    """
+        Please use 'app_confirm_key' as SecuretKey to confirm the operation
+        - **SecuretKey** (header): **Required** - use 'app_confirm_key' default value is 'Confirmed'.
+    """
+    log.logger.debug(
+        'Access \'/sys/config\' : run in main.py, input data: [ %s ]' % SecuretKey)
+    if SecuretKey == cfg['Application_Config'].app_confirm_key:
+        return {
+            "System_Config": cfg
+        }
+    else:
+        return {
+            "System_Config": 'Operation Aborted'
+        }
 
+@app.get("/sys/reloadmeta",
+         tags=["System"],
+         summary="Reload the Database Schema .",
+         description="",
+         )
+async def reload_meta(SecuretKey: str = Header(..., min_length=5),
+                      current_user_role: bool = Depends(security.get_super_permission)):
+
+    """
+        Please use 'app_confirm_key' as SecuretKey to confirm the operation
+        - **SecuretKey** (header): **Required** - use 'app_confirm_key' default value is 'Confirmed'.
+    """
+    log.logger.debug(
+        'Access \'/sys/reloadmeta\' : run in reload_meta(), input data: [ %s ]' % SecuretKey)
+    if SecuretKey == cfg['Application_Config'].app_confirm_key:
+        clear_meta_cache()
+        schema_file = dbmeta.DBMeta().schema_file
+        if os.path.exists(schema_file):
+            os.remove(schema_file)
+        dbmeta.DBMeta().load_metadata()
+        dbmeta.DBMeta().gen_schema()
+        dbmeta.DBMeta().load_schema()
+        dbmeta.DBMeta().gen_models()
+        dbmeta.DBMeta().gen_services()
+        return {
+            "Reload_Meta": 'Sucessful'
+        }
+    else:
+        return {
+            "Reload_Meta": 'Operation Aborted'
+        }
+
+@app.get("/sys/status",
+         tags=["System"],
+         summary="Show the database connection pool status.",
+         description="",
+         )
+async def sys_status(SecuretKey: str = Header(..., min_length=5),
+                      current_user_role: bool = Depends(security.get_super_permission)):
+    """
+        Please use 'app_confirm_key' as SecuretKey to confirm the operation
+        - **SecuretKey** (header): **Required** - use 'app_confirm_key' default value is 'Confirmed'.
+    """
+    log.logger.debug(
+        'Access \'/sys/status\' : run in main.py, input data: [ %s ]' % SecuretKey)
+    if SecuretKey == cfg['Application_Config'].app_confirm_key:
+        return {
+            "Pool_status": dbengine.DBEngine().connect().pool.status()
+        }
+    else:
+        return {
+            "Sys_status": 'Operation Aborted'
+        }
 
 def clear_meta_cache():
     # cache file define
