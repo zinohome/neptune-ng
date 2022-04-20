@@ -251,12 +251,13 @@ if __name__ == '__main__':
         log.logger.debug(ncmeta)
         resultstr = nc.fetch('Customer_Ownership','_schema/_table')
         log.logger.debug(resultstr)
-        resultstr = nc.fetch('Customer_Ownership', '_table', None, 10, 10, True)
+        resultstr = nc.fetch('Customer_Ownership', '_table', None, 0, 5, True)
         log.logger.debug(resultstr)
         resultstr = nc.post('Brands', '_table', json.dumps({"data": [{"brand_name":"Mini"}]}))
         log.logger.debug(resultstr)
         resultstr = nc.put('Brands', '_table', json.dumps({"data": {"brand_name": "MG"}, "ids": "brand_id"}), str(resultstr['body']['ids'][0]['brand_id']))
         log.logger.debug(resultstr)
+        log.logger.debug(resultstr['body']['brand_id'])
         idfield = 'Customers.id,Customers.id2'
         table_name = 'Customers'
         shortidfield = idfield.replace(table_name+'.','') if operator.contains(idfield,table_name+'.') else idfield
@@ -264,8 +265,8 @@ if __name__ == '__main__':
         idfield = 'id,id2'
         longidfield = idfield if operator.contains(idfield,table_name+'.') else table_name+'.'+(','+table_name+'.').join(idfield.split(','))
         log.logger.debug(longidfield)
-        #resultstr = nc.deletebyid('employees', '_table', 'employeeNumber', '1002')
-        #log.logger.debug(resultstr)
+        resultstr = nc.deletebyid('Brands', '_table', 'brand_id', str(resultstr['body']['brand_id']))
+        log.logger.debug(resultstr)
         #resultstr = nc.post('zinopara', '_table', json.dumps({"fieldvalue":"{'id': '229', 'type': '222', 'creatorid': '222', 'json': '222', 'json_updates': '2222'}"}))
         #log.logger.debug(resultstr)
 
