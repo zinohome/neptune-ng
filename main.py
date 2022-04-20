@@ -77,8 +77,8 @@ async def startup_event():
         clear_meta_cache()
     if cfg['Application_Config'].app_load_metadat_on_load:
         meta = dbmeta.DBMeta()
-        meta.gen_models()
-        meta.gen_services()
+        #meta.gen_models()
+        #meta.gen_services()
 
 @app.on_event("shutdown")
 def shutdown_event():
@@ -242,6 +242,67 @@ async def get_table_schema(table_name: str, current_user: security.User = Depend
             detail='Table [ %s ] not found' % table_name
         )
     return dbmeta.DBMeta().response_table_schema(table_name)
+
+@app.get(prefix+"/_table/{table_name}",
+         tags=["Data - Table Level"],
+         summary="Retrieve one or more records. ",
+         description="",
+         )
+async def get_data(table_name: str,
+                   queryfields: str = Header('*'),
+                   distinct: bool = Header(False),
+                   where: str = Header(None),
+                   order_by: str = Header(None),
+                   group_by: str = Header(None),
+                   limit: int = Header(cfg['Query_Config'].query_default_limit, gt=0, le=cfg['Query_Config'].query_limit_upset),
+                   offset: int = Header(cfg['Query_Config'].query_default_offset, gt=-1),
+                   count_only: bool = Header(False),
+                   include_count: bool = Header(False),
+                   current_user: security.User = Depends(security.get_current_active_user)):
+    """
+            Parameters
+            - **table_name** (path): **Required** - Name of the table to perform operations on.
+            - **"queryfields"** (header): "string",  -- Optional - Comma-delimited list of properties to be returned for each resource, "*" returns all properties. ex: 'Customers.first_name,Customers.last_name'
+            - **"distinct"** (header): 'False',  -- Optional , default['False'] - Return distinct result.
+            - **"where"** (header): "string",  -- Optional - SQL-like filter to limit the records to retrieve. ex: '((Customers.first_name != \'Tony\') | (Customers.household_income > 80001)) & (Customers.last_name != \'Stark\')'
+            - **"order_by** (header)": "string",  -- Optional - SQL-like order containing field and direction for filter results. ex: 'Customers.phone_number.asc(), Customers.household_income.desc()'
+            - **"group_by** (header)": "string",  -- Optional - Comma-delimited list of the fields used for grouping of filter results. ex: 'Customers.last_name'
+            - **"limit"** (header): 0,  -- Optional - Set to limit the filter results.
+            - **"offset"** (header): 0,  -- Optional - Set to offset the filter results to a particular record count.
+            - **"count_only"** (header): 'False',  -- Optional , default['False'] - Return only the total number of filter results.
+            - **"include_count"** (header): 'True'  -- Optional , default['True'] - Include the total number of filter results in returned result.
+        """
+    log.logger.debug(
+        'Access \'/_table/{table_name}\' : run in get_data(), input data table_name: [%s]' % table_name)
+    #log.logger.debug('fieldlist: [%s]' % queryfields)
+    #log.logger.debug('distinct: [%s]' % distinct)
+    #log.logger.debug('where: [%s]' % where)
+    #log.logger.debug('order_by: [%s]' % order_by)
+    #log.logger.debug('group_by: [%s]' % group_by)
+    #log.logger.debug('limit: [%s]' % limit)
+    #log.logger.debug('offset: [%s]' % offset)
+    #log.logger.debug('count_only: [%s]' % count_only)
+    #log.logger.debug('include_count: [%s]' % include_count)
+    queryjson = {}
+    queryjson['queryfields'] = queryfields
+    queryjson['distinct'] = distinct
+    queryjson['where'] = where
+    queryjson['order_by'] = order_by
+    queryjson['group_by'] = group_by
+    queryjson['limit'] = limit
+    queryjson['offset'] = offset
+    queryjson['count_only'] = count_only
+    queryjson['include_count'] = include_count
+    log.logger.debug('queryjson: [%s]' % queryjson)
+    if not dbmeta.DBMeta().check_table_schema(table_name):
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail='Table [ %s ] not found' % table_name
+        )
+    dataservicemodel = importlib.import_module('services.' + table_name.strip().lower() + 'service')
+    dataservice = getattr(dataservicemodel, table_name.strip() + 'Service')()
+
+    return getattr(dataservice, 'query_' + table_name.strip())(json.dumps(queryjson))
 
 @app.post(prefix+"/_table/_query/{table_name}",
           tags=["Data - Table Level"],
