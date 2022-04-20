@@ -17,7 +17,6 @@ bcrypt==3.2.0
 flask_admin==1.6.0
 flask_login==0.6.0
 flask_wtf==1.0.1
-simple_rest_client==1.1.2
 pandas==1.4.2
 Crypto==1.4.1
 pycryptodome==3.14.1
