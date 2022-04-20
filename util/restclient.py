@@ -254,7 +254,7 @@ if __name__ == '__main__':
         log.logger.debug(resultstr)
         #resultstr = nc.post('Brands', '_table', json.dumps({"data": [{"brand_name":"Mini"}]}))
         #log.logger.debug(resultstr)
-        resultstr = nc.put('Brands', '_table', json.dumps({"data": {"brand_name": "MG"},"ids": "brand_id"}), '8')
+        resultstr = nc.put('Brands', '_table', json.dumps({"data": {"brand_name": "MG"}, "ids": "brand_id,brand_id"}), '8-8')
         log.logger.debug(resultstr)
 
         #resultstr = nc.deletebyid('employees', '_table', 'employeeNumber', '1002')

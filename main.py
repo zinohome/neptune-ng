@@ -12,6 +12,7 @@
 
 '''config'''
 import json
+import operator
 import os
 import importlib
 from datetime import timedelta
@@ -530,7 +531,11 @@ async def put_data_by_id(table_name: str, id: str,
     idkvtuple = tuple(zip(idstrtuple,idtuple))
     ikdv = dict((x, y) for x, y in idkvtuple)
     for key,value in ikdv.items():
-        updateentity[key.strip(table_name+'.')] = value
+        log.logger.debug(key + '=' + value)
+        if operator.contains(key,table_name+'.'):
+            updateentity[key.strip(table_name+'.')] = value
+        else:
+            updateentity[key] = value
     return getattr(dataservice, 'update_' + table_name.strip() + '_byjson')(updateentity)
 
 @app.delete(prefix+"/_table/{table_name}/{id}",

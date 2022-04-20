@@ -13,7 +13,6 @@ class API:
         append_slash=False,
         json_encode_body=False,
         ssl_verify=None,
-        full_action_url=None,
     ):
         self.api_root_url = api_root_url
         self.params = params or {}
@@ -23,7 +22,6 @@ class API:
         self.json_encode_body = json_encode_body
         self.ssl_verify = True if ssl_verify is None else ssl_verify
         self._resources = {}
-        full_action_url=full_action_url,
 
     def add_resource(
         self,
@@ -36,6 +34,7 @@ class API:
         append_slash=None,
         json_encode_body=None,
         ssl_verify=None,
+        full_action_url=None,
     ):
         resource_class = resource_class or Resource
         resource = resource_class(
@@ -47,6 +46,7 @@ class API:
             append_slash=append_slash if append_slash is not None else self.append_slash,
             json_encode_body=json_encode_body if json_encode_body is not None else self.json_encode_body,
             ssl_verify=ssl_verify if ssl_verify is not None else self.ssl_verify,
+            full_action_url=full_action_url,
         )
         self._resources[resource_name] = resource
         resource_valid_name = self.correct_attribute_name(resource_name)
