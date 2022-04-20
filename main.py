@@ -439,6 +439,7 @@ async def get_data_by_id(table_name: str, id: str,
         - **id** (path): **Required** - The id value of identifier ex:10 , for mutiple ids, use ex: 10-20-……
         - **idfield** (header): - Comma-delimited list of the fields used as identifiers. ex: 'Customers.id,Customers.id2'
     """
+    idfield = idfield if operator.contains(idfield,table_name+'.') else table_name+'.'+(','+table_name+'.').join(idfield.split(','))
     log.logger.debug(
         'Access \'/_table/{table_name}/{id}\' : run in get_data_by_id(), input data table_name: [%s]' % table_name)
     log.logger.debug('idfield: [%s]' % idfield)
@@ -489,7 +490,8 @@ async def query_data_by_id(table_name: str, tablequerybyid: apimodel.RecordBody,
     dataservice = getattr(dataservicemodel, table_name.strip() + 'Service')()
     idstr = ''
     for key,value in tablequerybyid.data.items():
-        idstr = idstr + key + "==" + str(value) + ","
+        keystr = key if operator.contains(key,table_name+'.') else table_name+'.'+key
+        idstr = idstr + keystr + "==" + str(value) + ","
     idwherestr = "("+ ") & (".join(tuple(filter(None, idstr.replace(' ', '').split(',')))) + ")"
     log.logger.debug('query_data_by_id() querystr: [%s]' % idwherestr)
     return getattr(dataservice, 'get_' + table_name.strip() + '_byid')(idwherestr)
@@ -531,7 +533,7 @@ async def put_data_by_id(table_name: str, id: str,
     idkvtuple = tuple(zip(idstrtuple,idtuple))
     ikdv = dict((x, y) for x, y in idkvtuple)
     for key,value in ikdv.items():
-        log.logger.debug(key + '=' + value)
+        #log.logger.debug(key + '=' + value)
         if operator.contains(key,table_name+'.'):
             updateentity[key.strip(table_name+'.')] = value
         else:
@@ -552,6 +554,7 @@ async def delete_data_by_id(table_name: str, id: str,
         - **id** (path): **Required** - The id value of identifier ex:10 , for mutiple ids, use ex: 10-20-……
         - **idfield** (header): - Comma-delimited list of the fields used as identifiers. ex: 'Customers.id,Customers.id2'
     """
+    idfield = idfield if operator.contains(idfield,table_name+'.') else table_name+'.'+(','+table_name+'.').join(idfield.split(','))
     log.logger.debug(
         'Access \'/_table/{table_name}/{id}\' : run in delete_data_by_id(), input data table_name: [%s]' % table_name)
     log.logger.debug('id: [%s]' % id)
