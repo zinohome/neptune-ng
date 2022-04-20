@@ -27,7 +27,7 @@
         "username": "zhangjun",
         "full_name": "ZhangJun",
         "email": "zhangjun@zino.com",
-        "hashed_password": "$2b$12$veaxr3YII75zDDxQRbHSy.ev2D/ttpVPTkvk9rFXM14KjWTmv8li2",
+        "hashed_password": "$2b$12$rKRjUdCKSgr3wjZBsZxQ/.MGrtoODTFa9GhdJqo.mamCe9v4ls4OG",
         "role": "Superadmin",
         "disabled": "False"
     }
