@@ -57,7 +57,7 @@ def getviewdata(viewname):
             'recordsTotal': ncdata['body']['record_count'],
             'draw': request.args.get('draw', type=int),
         }
-        log.logger.debug(rdata)
+        #log.logger.debug(rdata)
         return rdata
     else:
         return render_template('accounts/login.html', msg='Login time expired !', form=LoginForm())
@@ -149,9 +149,12 @@ def puttabledata(tablename):
     if nc.token_expired:
         nc.renew_token()
     if (not nc.token_expired) and (nc.access_token is not None):
-        restbody = json.dumps({"fieldvalue":str(requstdict)})
-        ncdata = nc.put(tablename, '_table', restbody, pkname, str(idvalue))
-        if ncdata['code'] == 200 and "udpate_rowcount" in ncdata['body'] and int(ncdata['body']['udpate_rowcount']) > 0:
+        restbody = {}
+        restbody['ids'] = pkname
+        restbody['data'] = requstdict
+        ncdata = nc.put(tablename, '_table', json.dumps(restbody), idvalue)
+        #log.logger.debug(ncdata)
+        if ncdata['code'] == 200 and ncdata['body'] is not None:
             return Response(json.dumps(requstdict), status=200)
         else:
             return Response('{"status":500, "body": "' + str(ncdata['body']) + '"}', status=500)
