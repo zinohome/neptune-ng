@@ -267,6 +267,10 @@ if __name__ == '__main__':
         log.logger.debug(longidfield)
         resultstr = nc.deletebyid('Brands', '_table', 'brand_id', str(resultstr['body']['brand_id']))
         log.logger.debug(resultstr)
+        idks = ['brand_id']
+        ids = [8]
+        log.logger.debug(",".join(idks))
+        log.logger.debug("-".join(list(map(str, ids))))
         #resultstr = nc.post('zinopara', '_table', json.dumps({"fieldvalue":"{'id': '229', 'type': '222', 'creatorid': '222', 'json': '222', 'json_updates': '2222'}"}))
         #log.logger.debug(resultstr)
 

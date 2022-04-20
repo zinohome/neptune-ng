@@ -113,10 +113,17 @@ def posttabledata(tablename):
     if nc.token_expired:
         nc.renew_token()
     if (not nc.token_expired) and (nc.access_token is not None):
-        restbody = json.dumps({"fieldvalue":str(requstdict)})
+        sysdbmeta = dbmeta.DBMeta()
+        pks = sysdbmeta.get_table_primary_keys(tablename)
+        for pk in pks:
+            del requstdict[pk]
+        requestlist =[]
+        requestlist.append(requstdict)
+        restbodyjson = {"data":requestlist}
+        restbody = json.dumps(restbodyjson)
         ncdata = nc.post(tablename, '_table', restbody)
-        if ncdata['code'] == 200 and "insertResult" in ncdata['body'] and ncdata['body']['insertResult'] == 'True':
-            return Response(json.dumps(requstdict), status=200)
+        if ncdata['code'] == 200 and "ids" in ncdata['body'] and len(ncdata['body']['ids']) > 0:
+            return Response(json.dumps(ncdata['body']['data'][0]), status=200)
         else:
             return Response('{"status":500, "body": "' + str(ncdata['body']) + '"}', status=500)
     else:
@@ -129,14 +136,14 @@ def posttabledata(tablename):
 def puttabledata(tablename):
     requstdict = request.form.to_dict()
     sysdbmeta = dbmeta.DBMeta()
-    pkname = None
-    idvalue = None
     pks = sysdbmeta.get_table_primary_keys(tablename)
-    #TODO add multikey
-    if len(pks) == 1:
-        pkname = pks[0]
-    if pkname is not None:
-        idvalue = requstdict[pkname]
+    pknamelist = []
+    pklist = []
+    for pk in pks:
+        pknamelist.append(pk)
+        pklist.append(requstdict[pk])
+    pkname = ",".join(pknamelist)
+    idvalue = "-".join(list(map(str, pklist)))
     nc = restclient.NeptuneClient(session['username'],
                                   cryptutil.decrypt(cfg['Admin_Config'].SECRET_KEY, session['password']))
     if nc.token_expired:
@@ -157,21 +164,21 @@ def puttabledata(tablename):
 def deletetabledata(tablename):
     requstdict = request.form.to_dict()
     sysdbmeta = dbmeta.DBMeta()
-    pkname = None
-    idvalue = None
     pks = sysdbmeta.get_table_primary_keys(tablename)
-    #TODO add multikey
-    if len(pks) == 1:
-        pkname = pks[0]
-    if pkname is not None:
-        idvalue = requstdict[pkname]
+    pknamelist = []
+    pklist = []
+    for pk in pks:
+        pknamelist.append(pk)
+        pklist.append(requstdict[pk])
+    pkname = ",".join(pknamelist)
+    idvalue = "-".join(list(map(str, pklist)))
     nc = restclient.NeptuneClient(session['username'],
                                   cryptutil.decrypt(cfg['Admin_Config'].SECRET_KEY, session['password']))
     if nc.token_expired:
         nc.renew_token()
     if (not nc.token_expired) and (nc.access_token is not None):
         ncdata = nc.deletebyid(tablename, '_table', pkname, str(idvalue))
-        if ncdata['code'] == 200 and "delet_rowcount" in ncdata['body'] and ncdata['body']['delet_rowcount'] == 1:
+        if ncdata['code'] == 200 and ncdata['body'] == True:
             return Response('{"status":200, "body": "'+ str(ncdata['body'])+'"}', status=200)
         else:
             return Response('{"status":500, "body": "'+ str(ncdata['body'])+'"}', status=500)
