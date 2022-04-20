@@ -79,6 +79,7 @@
     const editor = document.querySelector('erd-editor');
     editor.readonly = false;
     editor.automaticLayout = true;
+    /*
     editor.setTheme({
       canvas: 'white',
       table: '#eee8d5',
@@ -100,7 +101,8 @@
       scrollbarThumbActive: 'rgba(100, 100, 100, 0.7)',
       menubar: 'light',
       visualization: '#fdf6e3',
-});
+      });
+     */
     fetch("/api/v1/_schema/dbdll")
       .then((response) => response.json())
       .then((data) => editor.loadSQLDDL(decodeURIComponent(escape(atob(data.content)))));
