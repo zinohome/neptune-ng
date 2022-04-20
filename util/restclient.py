@@ -11,12 +11,13 @@
 import asyncio
 import traceback
 
-from simple_rest_client.api import API
 from config import config
 from datetime import datetime, timedelta
 from util import log
 import json
 from pandas import json_normalize
+
+from util.simple_rest_client.api import API
 
 '''config'''
 cfg = config.app_config
@@ -133,8 +134,8 @@ class NeptuneClient():
             api.api_root_url = self.api_root_url + url_prefix
             api.add_resource(resource_name=resource_name)
             try:
-                #res = api._resources[api.correct_attribute_name(resource_name)]
-                res = api._resources[resource_name]
+                res = api._resources[api.correct_attribute_name(resource_name)]
+                #res = api._resources[resource_name]
                 log.logger.debug(res.actions)
                 #log.logger.debug(res.get_action_full_url(action))
                 #log.logger.debug(res.get_action(action))
@@ -162,8 +163,8 @@ class NeptuneClient():
             api.api_root_url = self.api_root_url + url_prefix
             api.add_resource(resource_name=resource_name)
             try:
-                # res = api._resources[api.correct_attribute_name(resource_name)]
-                res = api._resources[resource_name]
+                res = api._resources[api.correct_attribute_name(resource_name)]
+                #res = api._resources[resource_name]
                 func = getattr(res,action)
                 response = None
                 if body is not None:
@@ -177,7 +178,7 @@ class NeptuneClient():
                 traceback.print_exc()
 
 
-    def put(self, resource_name, url_prefix='', body=None, idfield=None, idvalue=None):
+    def put(self, resource_name, url_prefix='', body=None, idvalue=None):
         log.logger.debug(body)
         action = 'update'
         if self.token_expired:
@@ -186,13 +187,11 @@ class NeptuneClient():
             # log.logger.debug('access_token : %s' % self.access_token)
             api = self._api_client
             api.headers = {'Authorization': 'Bearer ' + self.access_token}
-            if idfield is not None:
-                api.headers['idfield'] = str(idfield)
             api.api_root_url = self.api_root_url + url_prefix
             api.add_resource(resource_name=resource_name, full_action_url=api.api_root_url + '/' + resource_name + '/' + idvalue)
             try:
-                # res = api._resources[api.correct_attribute_name(resource_name)]
-                res = api._resources[resource_name]
+                res = api._resources[api.correct_attribute_name(resource_name)]
+                #res = api._resources[resource_name]
                 func = getattr(res,action)
                 response = None
                 if body is not None:
@@ -219,8 +218,8 @@ class NeptuneClient():
             api.api_root_url = self.api_root_url + url_prefix
             api.add_resource(resource_name=resource_name, full_action_url=api.api_root_url + '/' + resource_name + '/' + idvalue)
             try:
-                # res = api._resources[api.correct_attribute_name(resource_name)]
-                res = api._resources[resource_name]
+                res = api._resources[api.correct_attribute_name(resource_name)]
+                #res = api._resources[resource_name]
                 # log.logger.debug(res.actions)
                 # log.logger.debug(res.get_action_full_url(action))
                 # log.logger.debug(res.get_action(action))
@@ -251,8 +250,13 @@ if __name__ == '__main__':
         log.logger.debug(ncmeta)
         resultstr = nc.fetch('Customer_Ownership','_schema/_table')
         log.logger.debug(resultstr)
-        #resultstr = nc.fetch('orders', '_table', None, 10, 10, True)
+        resultstr = nc.fetch('Customer_Ownership', '_table', None, 10, 10, True)
+        log.logger.debug(resultstr)
+        #resultstr = nc.post('Brands', '_table', json.dumps({"data": [{"brand_name":"Mini"}]}))
         #log.logger.debug(resultstr)
+        resultstr = nc.put('Brands', '_table', json.dumps({"data": {"brand_name": "MG"},"ids": "brand_id"}), '8')
+        log.logger.debug(resultstr)
+
         #resultstr = nc.deletebyid('employees', '_table', 'employeeNumber', '1002')
         #log.logger.debug(resultstr)
         #resultstr = nc.post('zinopara', '_table', json.dumps({"fieldvalue":"{'id': '229', 'type': '222', 'creatorid': '222', 'json': '222', 'json_updates': '2222'}"}))

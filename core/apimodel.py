@@ -18,7 +18,7 @@ from config import config
 
 class TableQueryBody(BaseModel):
     queryfields: Optional[str] = '*'  # eg. "Customers.first_name,Customers.last_name,Customers.customer_id"
-    distinct: Optional[bool] = None
+    distinct: Optional[bool] = False
     where: Optional[str] = None
     order_by: Optional[str] = None
     group_by: Optional[str] = None
