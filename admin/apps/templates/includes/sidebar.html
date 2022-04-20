@@ -40,14 +40,6 @@
               </p>
             </a>
           </li>
-          <li class="nav-item {% if 'index' in segment %} menu-open {% endif %}">
-            <a href="/admin/data-sheets.html" class="nav-link {% if 'data-sheets' in segment %} active {% endif %}">
-              <i class="nav-icon fas fa-align-justify"></i>
-              <p>
-                DataSheets
-              </p>
-            </a>
-          </li>
           <li class="nav-item has-treeview {% if 'data-table' in segment %} menu-open {% endif %}">
             <a href="#" class="nav-link {% if 'data-table' in segment %} active {% endif %}">
               <i class="nav-icon fas fa-table"></i>
@@ -112,14 +104,20 @@
           <li class="nav-header">Documents</li>
           <li class="nav-item">
             <a href="/admin/api-docs.html" class="nav-link">
-              <i class="nav-icon fas fa-file"></i>
+              <i class="nav-icon fas fa-file-code"></i>
               <p>Swagger</p>
             </a>
           </li>
           <li class="nav-item">
             <a href="/admin/api-redoc.html" class="nav-link">
-              <i class="nav-icon fas fa-file"></i>
+              <i class="nav-icon fas fa-file-code"></i>
               <p>Redoc</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="/admin/neptune-doc.html" class="nav-link">
+              <i class="nav-icon fas fa-book"></i>
+              <p>UserGuide</p>
             </a>
           </li>
         </ul>
